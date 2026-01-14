@@ -1,0 +1,4 @@
+.env
+venv
+.envrc
+backtest_logs
