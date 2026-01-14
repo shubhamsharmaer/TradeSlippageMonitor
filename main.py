@@ -1,7 +1,24 @@
 from fastapi import FastAPI
-from Config import settings
+from config import settings
+from routes import mismatch, get_bt_algo, get_lt_algo, get_clients
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title=settings.app_name)
+
+app = FastAPI(title="LiveToBacktestSlippage")
+
+# CORS setup
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(mismatch.router)
+app.include_router(get_bt_algo.router)
+app.include_router(get_lt_algo.router)
+app.include_router(get_clients.router)
 
 
 @app.get("/health")

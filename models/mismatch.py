@@ -1,8 +1,8 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 from models.trade import NormalizedTrade
 
-class TradeMismatch:
+class TradeMismatch(BaseModel):
     trade: NormalizedTrade
     mismatch_type: str
     expected: str

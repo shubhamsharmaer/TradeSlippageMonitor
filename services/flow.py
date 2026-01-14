@@ -80,3 +80,18 @@ class TradeMatchingFlowService:
             algoname=bt_trades
         )
 
+        normalized_lt_trades = self.normalize_live_trade_record(
+            records=lt_trades
+        )
+
+        matches = self.matcher.match_trades(
+            backtest_trades=normalized_bt_trades,
+            live_trades=normalized_lt_trades
+        )
+
+        report = self.detector.analyze(matches)
+
+        return report
+
+
+
