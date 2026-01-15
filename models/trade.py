@@ -36,6 +36,7 @@ class BacktestRecord(BaseModel):
     PositionStatus: int  # -1 for short, 1 for long
     Pnl: float
     ExitType: str
+    strategy: str
 
 class LiveTradeRecord(BaseModel):
     """Live trade MongoDB record"""

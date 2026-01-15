@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from services.flow import TradeMatchingFlowService
 from typing import Optional
 from datetime import date
+import traceback
 
 router = APIRouter(prefix="/api", tags=["Find Leakage"])
 
@@ -16,7 +17,7 @@ def find_mismatch(
     clientId: Optional[str] = None
 ):
 
-
+  
     try:
         results = service.reconcile(
             backtest_algo=backtest_algo,
@@ -33,9 +34,11 @@ def find_mismatch(
     
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
+        print(f"Error: {e}")
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+        print(f"Error: {e}")
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail=traceback.format_exc())

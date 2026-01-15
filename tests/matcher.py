@@ -5,11 +5,17 @@ from datetime import date
 from services.normalizer import normalize_live_trade_record, normalize_backtest_record
 from services.matcher import TradeMatchingEngine
 from helpers.csv_saver import save_to_csv_pd
+from services.detector import MismatchDetector
+from helpers.matchresult_csv import match_results_to_rows
+
+
 
 if __name__ == "__main__":
     repo = LiveTradeRepo()
     bt_repo = BacktestRepo()
     trade_repo = TradeMatchingEngine()
+    detector_repo = MismatchDetector()
+
     bt_trades = bt_repo.load_trades(
         algoname="DRB_N_oct24",
         start_date=date(2025, 10, 1),
@@ -18,7 +24,7 @@ if __name__ == "__main__":
     # save_to_csv_pd(bt_trades, "bt_trades_from_db.csv")
     norm_bt_trades = normalize_backtest_record(
         records=bt_trades,
-        algoname="DRB_N_oct24",
+        # algoname="DRB_N_oct24",
     )
     save_to_csv_pd(norm_bt_trades, "norm_bt_trades.csv")
     lt_trades = repo.load_trades(
@@ -46,18 +52,17 @@ if __name__ == "__main__":
         live_trades=norm_lt_trades
     )
 
-    
-    print(f"---------------------MATCHES RESULTS--------------------------")
+    results = detector_repo.analyze(matcher)
+    df = match_results_to_rows(matcher)
 
-    for m in matcher:
-        if m.matched:
-            print(
-                f"matched={m.matched}, "
-                # f"trade={m}, "
-                f"reason={m.reason}"
-            )
-    # print(f"Matched Trades: {[m for m in matcher if m.matched]}")
-    print(f"Total matches found: {len([m for m in matcher if m.matched])}")
+    # ---- matched ----
+    matched_df = df[df["status"] == "MATCHED"]
+    matched_df.to_csv("matched_trades.csv", index=False)
 
-    print(f"Total Extra Live trades: {len([m for m in matcher if not m.matched and m.live_trade is not None])}")
-    print(f"Total Live missing trades: {len([m for m in matcher if not m.matched and m.backtest_trade is not None])}")
+    # ---- unmatched (missing + extra) ----
+    unmatched_df = df[df["status"] != "MATCHED"]
+    unmatched_df.to_csv("unmatched_trades.csv", index=False)
+
+    print("✅ CSV exports created:")
+    print(f"Matched trades: {len(matched_df)}")
+    print(f"Unmatched trades: {len(unmatched_df)}")

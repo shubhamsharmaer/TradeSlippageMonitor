@@ -21,7 +21,7 @@ class TradeMatchingFlowService:
 
     def reconcile(self, backtest_algo: str, live_algo: str, start_date: date, end_date: date, clientId: Optional[str] = None):
         if clientId:
-            return self._recocile_for_client(
+            return self._reconcile_for_client(
                 backtest_algo,
                 live_algo,
                 start_date,
@@ -30,7 +30,7 @@ class TradeMatchingFlowService:
             )
         
         # if not client is selected || ALL CLIENTS CASE
-        clients = self.live_algo._get_distinct_clients(
+        clients = self.live_repo._get_distinct_clients(
             algoname=live_algo,
             start_date=start_date,
             end_date=end_date
@@ -39,7 +39,8 @@ class TradeMatchingFlowService:
         results = {}
 
         for cid in clients:
-            results[cid] = self._recocile_for_client(
+            # print(f"Processing Client: {cid}")
+            results[cid] = self._reconcile_for_client(
                 backtest_algo=backtest_algo,
                 live_algo=live_algo,
                 start_date=start_date,
@@ -75,12 +76,12 @@ class TradeMatchingFlowService:
         )
 
         # normalize both trades
-        normalized_bt_trades = self.normalize_backtest_record(
+        normalized_bt_trades = normalize_backtest_record(
             records=bt_trades,
-            algoname=bt_trades
+            # algoname=bt_trades.algoname
         )
 
-        normalized_lt_trades = self.normalize_live_trade_record(
+        normalized_lt_trades = normalize_live_trade_record(
             records=lt_trades
         )
 

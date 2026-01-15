@@ -4,6 +4,7 @@ from datetime import datetime, date, timedelta
 from pymongo import MongoClient
 from config import settings
 from models.trade import LiveTradeRecord
+from logger_setup import logger
 
 
 class LiveTradeRepo:
@@ -12,10 +13,10 @@ class LiveTradeRepo:
     def __init__(self):
         # self.client = MongoClient(settings.backoffice_mongo_uri)
         self.client = MongoClient(settings.mongo_uri)
-        print(f"Connected to MongoDB at {settings.mongo_uri}")
+        logger.info(f"✅ Connected to Live Trade MongoDB")
         # self.db = self.client[settings.backoffice_mongo_db]
         self.db = self.client[settings.mongo_db]
-        print(f"Using database: {settings.mongo_db}")
+        # print(f"Using database: {settings.mongo_db}")
         # self.collection = self.db[settings.backoffice_live_trade_collection]
 
     def _get_collection(self, start_date: date, end_date: date):
@@ -32,7 +33,8 @@ class LiveTradeRepo:
                 collections.append(self.db[collection_name])
                 # print(f"Using collection: {collection_name}")
             else:
-                print(f"Collection {collection_name} does not exist.")
+                logger.warning(f"Collection {collection_name} does not exist.")
+                print(f"")
             current_date += timedelta(days=1)
         return collections
 
@@ -98,7 +100,7 @@ class LiveTradeRepo:
         # if clientId:
         #     query["clientID"] = clientId
         
-        print(f"Querying Live trades: For {algoname} from {start_date} to {end_date}")
+        logger.info(f"🔽 Fetching Live trades: Client: {clientId} | Algo: {algoname} from {start_date} to {end_date}")
         for collection in collections:
             cursor = collection.find(query, projection).sort("date", 1)
                 
@@ -110,5 +112,7 @@ class LiveTradeRepo:
                     trades.append(record)
                 except Exception as e:
                     print(f"Error parsing document: {doc}. Error: {e}")
+                    logger.error("❌ Something went wrong in live trades fetching")
                     raise e
+        logger.info(f"✅ All Live trades fetched")
         return trades

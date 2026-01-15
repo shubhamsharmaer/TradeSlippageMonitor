@@ -10,7 +10,7 @@ from config import settings
 from pymongo import MongoClient
 from typing import List
 from datetime import datetime, date, time, timezone, timedelta
-
+from logger_setup import logger
 from models.trade import BacktestRecord
 
 class BacktestRepo:
@@ -22,9 +22,9 @@ class BacktestRepo:
             settings.finsage_mongo_uri, 
             tz_aware=True,
             tzinfo=timezone.utc)
-        print(f"Connected to MongoDB at {settings.finsage_mongo_uri}")
+        logger.info(f"✅ Connected to Backtest MongoDB")
         self.db = self.client[settings.finsage_mongo_db]
-        print(f"Using database: {settings.finsage_mongo_db}")
+        # print(f"Using database: {settings.finsage_mongo_db}")
         self.collection = self.db[settings.backtest_trade_collection]
 
 
@@ -49,7 +49,7 @@ class BacktestRepo:
                 "$lte": datetime.combine(end_date, time.max, tzinfo=timezone.utc)
             }
         }
-        print(f"Querying backtest trades: For {algoname} from {start_date} to {end_date}")
+        logger.info(f"🔽 Fetching Backtest trades: Algo {algoname} from {start_date} to {end_date}")
         projection = {
             "_id": 0,
             "Key": 1,
@@ -61,8 +61,10 @@ class BacktestRepo:
             "PositionStatus": 1,
             "Pnl": 1,
             "ExitType": 1,
+            "strategy": 1
         }
         cursor = self.collection.find(query, projection).sort("Key", 1)
+        logger.info(f"✅ All Backtest trades fetched")
         for row in cursor:
             try:
                 record = BacktestRecord(
@@ -75,6 +77,7 @@ class BacktestRepo:
                     PositionStatus=row["PositionStatus"],
                     Pnl=row["Pnl"],
                     ExitType=row["ExitType"],
+                    strategy=row["strategy"]
                 )
 
                 trades.append(record)
