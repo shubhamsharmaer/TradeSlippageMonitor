@@ -1,6 +1,7 @@
 from typing import List, Optional
 from pydantic import BaseModel
 from models.trade import NormalizedTrade
+from models.timeline import TradeTimeline
 
 class TradeMismatch(BaseModel):
     lt_trade: NormalizedTrade
@@ -27,11 +28,11 @@ class MissingTrade(BaseModel):
     expected: str | None
     actual: Optional[str]
 
-
 class MismatchReport(BaseModel):
+    timeline_trades: TradeTimeline
     missing_trades: List[MissingTrade]
     extra_trades: List[ExtraTrade]
     matched_trades: List[TradeMatch]
-    time_mismatches: List[TradeMismatch]
+    # time_mismatches: List[TradeMismatch]
     price_mismatches: List[TradeMismatch]
     summary: dict

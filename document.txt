@@ -19,19 +19,17 @@ Backend Service
      │        ✅└──► normalize_live()
      │                  └──► Returns: List[NormalizedTrade]
      │
-     ├──► Trade Matching Engine
+   ✅├──► Trade Matching Engine
      │          │
-     │          ├──► group_trades()
-     │          ├──► find_matches()
-     │          ├──► calculate_scores()
-     │          └──► Returns: MatchResult
+     │        ✅├──► find_matches()
+     │        ✅└──► Returns: MatchResult
      │
-     └──► Mismatch Detector
+   ✅└──► Mismatch Detector
             │
-            ├──► analyze_time_mismatches()
-            ├──► analyze_price_mismatches()
-            ├──► analyze_trade_mismatches()
-            └──► Returns: MismatchReport
+            ├──► report_time_mismatches()✅
+            ├──► report_price_mismatches()✅
+            ├──► report_trade_mismatches()✅
+            └──► Returns: MismatchReport✅
                       │
                       ▼
               Response Serializer

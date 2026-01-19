@@ -11,6 +11,11 @@ from services.normalizer import normalize_backtest_record, normalize_live_trade_
 from services.matcher import TradeMatchingEngine
 from services.detector import MismatchDetector
 
+# time line maker 
+from services.timeline_maker import TimelineMakerService
+from helpers.timeline_csv import timeline_rows
+from helpers.matchresult_csv import results_to_csv
+
 class TradeMatchingFlowService:
     def __init__(self):
         self.backtest_repo = BacktestRepo()
@@ -18,6 +23,8 @@ class TradeMatchingFlowService:
 
         self.matcher = TradeMatchingEngine()
         self.detector = MismatchDetector()
+
+        self.timeline = TimelineMakerService()
 
     def reconcile(self, backtest_algo: str, live_algo: str, start_date: date, end_date: date, clientId: Optional[str] = None):
         if clientId:
@@ -85,12 +92,27 @@ class TradeMatchingFlowService:
             records=lt_trades
         )
 
-        matches = self.matcher.match_trades(
+        timeline = self.timeline.timeline_builder(
             backtest_trades=normalized_bt_trades,
-            live_trades=normalized_lt_trades
+            live_trades=normalized_lt_trades,
+            start_date=start_date,
+            end_date=end_date
         )
+        df = timeline_rows([timeline])
+        df.to_csv("trade_timeline.csv", index=False)
 
-        report = self.detector.analyze(matches)
+
+        # matches = self.matcher.match_trades(
+        #     backtest_trades=normalized_bt_trades,
+        #     live_trades=normalized_lt_trades
+        # )
+
+        matches = self.matcher.match_trades(timeline)
+
+        df = results_to_csv(timeline=timeline, match_results=matches)
+        df.to_csv('matches_results.csv', index=False)
+
+        report = self.detector.analyze(matches, timeline)
 
         return report
 

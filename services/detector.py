@@ -1,25 +1,36 @@
 from typing import List
-from models.mismatch import TradeMismatch, MismatchReport, TradeMatch, MissingTrade, ExtraTrade
-from services.matcher import MatchResult
+from models.mismatch import (
+    TradeMismatch, MismatchReport, 
+    TradeMatch, MissingTrade, ExtraTrade)
+from models.timeline import TradeTimeline
+# from services.matcher import MatchResult
+from services.matcher import (
+    MatchResult,
+    MissingLiveTrade,
+    ExtraLiveTrade,
+    MatchOutcome
+)
 from datetime import date, timedelta
 from logger_setup import logger
+import traceback
+
 
 class MismatchDetector:
-    # def __init__(self, time_threshold: int = 2, price_threshold: float = 1.0):
-    #     self.time_threshold = timedelta(minutes=time_threshold)
-    #     self.price_threshold = price_threshold
 
-    def analyze(self, matches: List[MatchResult]) -> MismatchReport:
+    def analyze(self, matches: List[MatchResult], timeline_trades) -> MismatchReport:
         try:
             logger.info("🔃 Report Making Started")
+
+            matched = []
             missing = [] # in backtest but not in live
             extra = []  # in live but not in backtest
-            matched = []
-            time_mismatch = []
+            # time_mismatch = []
             price_mismatch = []
+
+            timeline_trades = timeline_trades
+            
             logger.info("Loop in matches from matcher started")
             for m in matches:
-
                 if m.backtest_trade and not m.live_trade:
                     missing.append(self._missing_trade(m))
                 elif not m.backtest_trade and m.live_trade:
@@ -27,24 +38,29 @@ class MismatchDetector:
                 elif m.matched:
                     matched.append(self._matched_trade(m))
 
-                    if m.time_mismatch:
-                        time_mismatch.append(self._time_mismatch(m))
+                    # if m.time_mismatch:
+                    #     time_mismatch.append(self._time_mismatch(m))
 
                     if m.price_mismatch:
                         price_mismatch.append(self._price_mismatch(m))
-            summary = self._build_summary(matches, missing, extra, matched, time_mismatch, price_mismatch)
+            
+            summary = self._build_summary(matches, missing, extra, matched, price_mismatch)
+
             logger.info("✅ Summary Generated")
             logger.info("✅ Report Generated")
+            
             return MismatchReport(
+                timeline_trades=timeline_trades,
                 extra_trades=extra,
                 missing_trades=missing,
                 matched_trades=matched,
-                time_mismatches=time_mismatch,
+                # time_mismatches=time_mismatch,
                 price_mismatches=price_mismatch,
                 summary=summary
             )
         except Exception as e:
             logger.error("❌ Something went wrong analyze function of detector service")
+            return (traceback.format_exc())
 
     def _missing_trade(self, match: MatchResult) -> MissingTrade:
         return MissingTrade(
@@ -69,7 +85,7 @@ class MismatchDetector:
             mismatch_type=match.reason
         )
 
-    def _time_mismatch(self, match: MatchResult) -> TradeMismatch:
+    # def _time_mismatch(self, match: MatchResult) -> TradeMismatch:
         return TradeMismatch(
             lt_trade=match.live_trade,
             bt_trade=match.backtest_trade,
@@ -87,7 +103,7 @@ class MismatchDetector:
             actual=str(match.live_trade.price)
         )
     
-    def _build_summary(self, matches, missing, extra, matched, time_m, price_m):
+    def _build_summary(self, matches, missing, extra, matched, price_m):
         bt_count = len([m for m in matches if m.backtest_trade])
 
         return {
@@ -96,7 +112,7 @@ class MismatchDetector:
             "matched_trades": len(matched),
             "missing_trades": len(missing),
             "extra_trades": len(extra),
-            "time_mismatches": len(time_m),
+            # "time_mismatches": len(time_m),
             "price_mismatches": len(price_m),
             "match_rate": round(len(matched) / max(1, bt_count), 2)
         }

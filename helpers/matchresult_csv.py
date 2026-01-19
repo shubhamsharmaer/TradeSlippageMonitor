@@ -1,55 +1,81 @@
 import pandas as pd
 from typing import List
+from models.timeline import TradeTimeline
 from services.matcher import MatchResult
 
+def trade_key(trade):
+    if trade is None:
+        return None
+    return (
+        trade.symbol,
+        trade.trade_type,
+        trade.quantity,
+        round(trade.price, 4),
+        trade.trade_time,
+    )
 
-def match_results_to_rows(matches: List[MatchResult]):
+def results_to_csv(
+    timeline: TradeTimeline,
+    match_results: List[MatchResult]
+) -> pd.DataFrame:
+
     rows = []
+    match_index = {}
 
-    for m in matches:
-        bt = m.backtest_trade
-        lt = m.live_trade
+    # --- Build match lookup ---
+    for r in match_results:
+        key_bt = trade_key(r.backtest_trade)
+        key_lt = trade_key(r.live_trade)
 
-        if m.matched:
-            status = "MATCHED"
-            sort_time = min(bt.trade_time, lt.trade_time)
-        elif bt and not lt:
-            status = "MISSING_LIVE"
-            sort_time = bt.trade_time
-        elif lt and not bt:
-            status = "EXTRA_LIVE"
-            sort_time = lt.trade_time
+        payload = {
+            "flag": r.flag,
+            "reason": r.reason,
+            "time_diff": r.time_diff,
+            "price_diff": r.price_diff,
+            "matched": r.matched,
+        }
+
+        if r.matched:
+            if key_bt:
+                match_index[key_bt] = {**payload, "status": "MATCHED"}
+            if key_lt:
+                match_index[key_lt] = {**payload, "status": "MATCHED"}
+
         else:
-            status = "UNKNOWN"
+            if r.backtest_trade and not r.live_trade:
+                match_index[key_bt] = {**payload, "status": "MISS"}
+
+            if r.live_trade and not r.backtest_trade:
+                match_index[key_lt] = {**payload, "status": "MISS"}
+
+    # --- Walk timeline ---
+    for event in timeline.events:
+        trade = event.trade
+        info = match_index.get(trade_key(trade), {})
 
         rows.append({
-            "sort_time": sort_time,
-            "status": status,
+            "time": event.time,
+            "source": event.source,
 
+            # classification
+            # "status": info.get("status", "UNCLASSIFIED"),
+            "status": info.get("flag"),
+            "reason": info.get("reason"),
 
-            # ---- Backtest trade ----
-            # "bt_trade_id": getattr(bt, "trade_id", None),
-            "bt_symbol": getattr(bt, "symbol", None),
-            "bt_trade_type": getattr(bt, "trade_type", None),
-            "bt_trade_time": getattr(bt, "trade_time", None),
-            "bt_qty": getattr(bt, "quantity", None),
-            "bt_price": getattr(bt, "price", None),
+            # trade fields
+            "symbol": trade.symbol,
+            "trade_type": trade.trade_type,
+            "quantity": trade.quantity,
+            "price": trade.price,
 
-            # ---- Live trade ----
-            # "lt_trade_id": getattr(lt, "trade_id", None),
-            "lt_symbol": getattr(lt, "symbol", None),
-            "lit_trade_type": getattr(lt, "trade_type", None),
-            "lt_trade_time": getattr(lt, "trade_time", None),
-            "lt_qty": getattr(lt, "quantity", None),
-            "lt_price": getattr(lt, "price", None),
-
-            # ---- Match metadata ----
-            # "score": m.score,
-            "time_diff_sec": m.time_diff,
-            "price_diff": m.price_diff,
-            # "time_mismatch": m.time_mismatch,
-            # "price_mismatch": m.price_mismatch,
-            "reason": m.reason
+            # diagnostics
+            "time_diff": info.get("time_diff"),
+            "price_diff": info.get("price_diff"),
+            # "matched": info.get("matched"),
         })
 
-    return pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+    df.sort_values("time", inplace=True)
+    df.reset_index(drop=True, inplace=True)
+
+    return df

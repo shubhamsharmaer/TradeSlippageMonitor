@@ -54,10 +54,10 @@ class LiveTradeRepo:
             }
         }
         
-        projection = {
-            "_id": 0,
-            "clientID": 1
-        }
+        # projection = {
+        #     "_id": 0,
+        #     "clientID": 1
+        # }
         clients: Set[str] = set()
 
         for collection in collections:
@@ -102,7 +102,7 @@ class LiveTradeRepo:
         
         logger.info(f"🔽 Fetching Live trades: Client: {clientId} | Algo: {algoname} from {start_date} to {end_date}")
         for collection in collections:
-            cursor = collection.find(query, projection).sort("date", 1)
+            cursor = collection.find(query, projection).sort("orderSentTime", 1)
                 
             for doc in cursor:
                 adjusted_orderSentTime = doc["orderSentTime"] + 19800  # Adjusting for IST to UTC

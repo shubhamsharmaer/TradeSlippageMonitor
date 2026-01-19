@@ -36,7 +36,7 @@ def normalize_backtest_record(
             # Entry trade
             normalized.append(
                 NormalizedTrade(
-                    trade_id=None,
+                    # trade_id=None,
                     source="backtest",
                     algoname=record.strategy,
                     symbol=record.symbol,
@@ -45,14 +45,14 @@ def normalize_backtest_record(
                     price=record.EntryPrice,
                     quantity=record.Quantity,
                     trade_time=entry_dt,
-                    raw_data=record.dict(),
+                    # raw_data=record.dict(),
                 )
             )
 
             # Exit trade
             normalized.append(
                 NormalizedTrade(
-                    trade_id=None,
+                    # trade_id=None,
                     source="backtest",
                     algoname=record.strategy,
                     symbol=record.symbol,
@@ -61,9 +61,10 @@ def normalize_backtest_record(
                     price=record.ExitPrice,
                     quantity=record.Quantity,
                     trade_time=exit_dt,
-                    raw_data=record.dict(),
+                    # raw_data=record.dict(),
                 )
             )
+            
             # print(f"total trades count: {len(normalized)}")
         logger.info(f"✅ All Backtest Trades Normalized")
         return normalized
@@ -95,7 +96,7 @@ def normalize_live_trade_record(
             )
             
             normalized_trade = NormalizedTrade(
-                trade_id=record.id,
+                # trade_id=record.id,
                 source="live",
                 algoname=record.algoname,
                 symbol=record.symbol,
