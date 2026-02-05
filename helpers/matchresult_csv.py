@@ -79,3 +79,44 @@ def results_to_csv(
     df.reset_index(drop=True, inplace=True)
 
     return df
+
+def results_to_csv_split(
+    match_results: List[MatchResult]
+) -> pd.DataFrame:
+
+    rows = []
+
+    for r in match_results:
+        lt = r.live_trade
+        bt = r.backtest_trade
+
+        rows.append({
+            
+            # -------- LIVE SIDE --------
+            "live_symbol": lt.symbol if lt else None,
+            "live_trade_type": lt.trade_type if lt else None,
+            "live_quantity": lt.quantity if lt else None,
+            "live_price": lt.price if lt else None,
+            
+            # middle reference time
+            "time": lt.trade_time if lt else bt.trade_time if bt else None,
+
+            # -------- BACKTEST SIDE --------
+            "bt_symbol": bt.symbol if bt else None,
+            "bt_trade_type": bt.trade_type if bt else None,
+            "bt_quantity": bt.quantity if bt else None,
+            "bt_price": bt.price if bt else None,
+
+            # -------- MATCH INFO --------
+            # "status": "MATCHED" if r.matched else "MISS",
+            "flag": r.flag,
+            "reason": r.reason,
+            "time_diff": r.time_diff,
+            "price_diff": r.price_diff,
+        })
+
+    df = pd.DataFrame(rows)
+    df.sort_values("time", inplace=True)
+    df.reset_index(drop=True, inplace=True)
+
+    return df

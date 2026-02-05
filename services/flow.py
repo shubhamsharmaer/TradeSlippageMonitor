@@ -14,7 +14,12 @@ from services.detector import MismatchDetector
 # time line maker 
 from services.timeline_maker import TimelineMakerService
 from helpers.timeline_csv import timeline_rows
-from helpers.matchresult_csv import results_to_csv
+from helpers.matchresult_csv import results_to_csv, results_to_csv_split
+
+class NoBacktestTrades(Exception):
+    pass
+class NoLiveTrades(Exception):
+    pass
 
 class TradeMatchingFlowService:
     def __init__(self):
@@ -73,6 +78,7 @@ class TradeMatchingFlowService:
             start_date=start_date,
             end_date=end_date
         )
+            
 
         # load live trades
         lt_trades = self.live_repo.load_trades(
@@ -82,6 +88,12 @@ class TradeMatchingFlowService:
             clientId=clientId
         )
 
+        if len(bt_trades) == 0:
+            raise NoBacktestTrades("no backtest trades found for this time period")
+
+        elif len(lt_trades) == 0:
+            raise NoLiveTrades("no live trades found for this time period")
+            
         # normalize both trades
         normalized_bt_trades = normalize_backtest_record(
             records=bt_trades,
@@ -111,6 +123,8 @@ class TradeMatchingFlowService:
 
         df = results_to_csv(timeline=timeline, match_results=matches)
         df.to_csv('matches_results.csv', index=False)
+        df = results_to_csv_split(match_results=matches)
+        df.to_csv(f'{live_algo}_split_results.csv', index=False)
 
         report = self.detector.analyze(matches, timeline)
 

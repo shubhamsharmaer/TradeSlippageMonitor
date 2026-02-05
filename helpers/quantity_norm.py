@@ -1,6 +1,7 @@
 from typing import List, Optional
 from pymongo import MongoClient
 from config import settings
+from datetime import datetime
 
 class NormalizedQuantity:
     def __init__(self):
@@ -10,11 +11,12 @@ class NormalizedQuantity:
         self.collection = self.db[settings.backoffice_algo_collection]
         # print(f"Using database: {settings.backoffice_mongo_db}")
 
-    def get_normalized_quantity(self, algoname: str, original_quantity: int, clientID: str) -> Optional[int]:
+    def get_normalized_quantity(self, algoname: str, original_quantity: int, clientID: str, trade_date: datetime) -> Optional[int]:
 
         query = {
             "algoname": algoname,
-            "clientID": clientID
+            "clientID": clientID,
+            "date": trade_date
         }
 
         projection = {

@@ -39,7 +39,7 @@ class TradeMatchingEngine:
     """Matches trades using a timeline-first approach.
     Time is already aligned by timeline, so matcher focuses on
     symbol, trade_type, quantity, price."""
-    def __init__(self, time_tolerance_minutes: int = 1, price_tolerance: float = 1.0):
+    def __init__(self, time_tolerance_minutes: int = 1, price_tolerance: float = 25.0):
         self.time_tolerance = timedelta(minutes=time_tolerance_minutes)
         self.price_tolerance = price_tolerance
     
@@ -58,49 +58,61 @@ class TradeMatchingEngine:
             for bt in bt_bucket:
                 match = None
                 best_price_diff = None
+                closest_lt = None
 
+                # 1️⃣ Find eligible live trades
                 for lt in unmatched_lt:
                     if (
                         lt.symbol == bt.symbol
                         and lt.trade_type == bt.trade_type
                         and (lt.quantity % bt.quantity == 0)
                     ):
-                        best_price_diff = round(abs(lt.price - bt.price), 2)
-                        price_mismatch = best_price_diff <= self.price_tolerance
-                        if price_mismatch == True:
-                            match = lt
-                            unmatched_lt.remove(lt)
-                            break
+                        price_diff = round(abs(lt.price - bt.price), 2)
 
-                if match:
+                        # Track closest price
+                        if best_price_diff is None or price_diff < best_price_diff:
+                            best_price_diff = price_diff
+                            closest_lt = lt
+
+                # 2️⃣ Decide match
+                if closest_lt and best_price_diff <= self.price_tolerance:
+                    match = closest_lt
+                    unmatched_lt.remove(match)
+
                     results.append(
                         MatchResult(
                             backtest_trade=bt,
                             live_trade=match,
                             matched=True,
                             flag="MATCH",
-                            reason=(
-                                f"Matched with price diff={best_price_diff}"
-                                if price_mismatch == True
-                                else f"Matched"
-                            ),
-                            time_diff=0.0,  # SAME EVENT TIME
+                            reason=f"Matched | price_diff={best_price_diff}",
+                            time_diff=0.0,
                             price_diff=best_price_diff,
                             time_mismatch=False,
-                            price_mismatch=price_mismatch,
+                            price_mismatch=False,
                         )
                     )
+
                 else:
+                    # 3️⃣ Diagnose miss reason
+                    if best_price_diff is not None:
+                        reason = f"Price mismatch {best_price_diff}"
+                    else:
+                        reason = "Live trade miss"
+
                     results.append(
                         MatchResult(
                             backtest_trade=bt,
                             live_trade=None,
                             matched=False,
                             flag="MISS",
-                            reason="Live trade missing at same time",
+                            reason=reason,
+                            price_diff=best_price_diff,
+                            price_mismatch=(best_price_diff is not None),
                         )
                     )
 
+            # 4️⃣ Extra live trades
             for lt in unmatched_lt:
                 results.append(
                     MatchResult(
@@ -108,7 +120,7 @@ class TradeMatchingEngine:
                         live_trade=lt,
                         matched=False,
                         flag="MISS",
-                        reason="Extra live trade at same time",
+                        reason="Hedge | No eligible live trade",
                     )
                 )
 

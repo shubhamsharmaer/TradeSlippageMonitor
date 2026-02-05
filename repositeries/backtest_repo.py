@@ -74,6 +74,7 @@ class BacktestRepo:
                     EntryPrice=row["EntryPrice"],
                     ExitPrice=row["ExitPrice"],
                     Quantity=row["Quantity"],
+                    # Quantity=65,
                     PositionStatus=row["PositionStatus"],
                     Pnl=row["Pnl"],
                     ExitType=row["ExitType"],

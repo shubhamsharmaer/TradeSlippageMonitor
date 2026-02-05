@@ -3,3 +3,4 @@ venv
 .envrc
 backtest_logs
 logs
+*.csv

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from services.flow import TradeMatchingFlowService
+from services.flow import TradeMatchingFlowService, NoLiveTrades, NoBacktestTrades
 from typing import Optional
 from datetime import date
 import traceback
@@ -31,6 +31,13 @@ def find_mismatch(
             "status": "success",
             "data": results
         }
+    
+
+    except NoBacktestTrades as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    except NoLiveTrades as e:
+        raise HTTPException(status_code=400, detail=str(e))
     
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))

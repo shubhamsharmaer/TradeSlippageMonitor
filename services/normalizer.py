@@ -89,10 +89,12 @@ def normalize_live_trade_record(
             
             # trade_time_naive = trade_time.replace(tzinfo=None)
             trade_time_rounded = trade_time.replace(microsecond=0, second=0)
+            trade_date_str = trade_time.date().isoformat()
             normalized_quantity = normalized_quantity_repo.get_normalized_quantity(
                 algoname = record.algoname,
                 clientID= record.clientID,
-                original_quantity= record.quantity
+                original_quantity= record.quantity,
+                trade_date= trade_date_str
             )
             
             normalized_trade = NormalizedTrade(
