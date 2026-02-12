@@ -39,11 +39,14 @@ class TradeMatchingEngine:
     """Matches trades using a timeline-first approach.
     Time is already aligned by timeline, so matcher focuses on
     symbol, trade_type, quantity, price."""
-    def __init__(self, time_tolerance_minutes: int = 1, price_tolerance: float = 25.0):
+    # def __init__(self, time_tolerance_minutes: int = 1, price_tolerance: float = 25.0):
+    #     self.time_tolerance = timedelta(minutes=time_tolerance_minutes)
+    #     self.price_tolerance = price_tolerance
+    
+    def match_trades(self, timeline: TradeTimeline, time_tolerance_minutes: int, price_tolerance: float) -> List[MatchResult]:
         self.time_tolerance = timedelta(minutes=time_tolerance_minutes)
         self.price_tolerance = price_tolerance
-    
-    def match_trades(self, timeline: TradeTimeline) -> List[MatchResult]:
+
         results: List[MatchResult] = []
 
         current_time = None
@@ -75,23 +78,40 @@ class TradeMatchingEngine:
                             closest_lt = lt
 
                 # 2️⃣ Decide match
-                if closest_lt and best_price_diff <= self.price_tolerance:
+                if closest_lt:
+
                     match = closest_lt
                     unmatched_lt.remove(match)
 
-                    results.append(
-                        MatchResult(
-                            backtest_trade=bt,
-                            live_trade=match,
-                            matched=True,
-                            flag="MATCH",
-                            reason=f"Matched | price_diff={best_price_diff}",
-                            time_diff=0.0,
-                            price_diff=best_price_diff,
-                            time_mismatch=False,
-                            price_mismatch=False,
+                    if best_price_diff <= self.price_tolerance:
+
+                        results.append(
+                            MatchResult(
+                                backtest_trade=bt,
+                                live_trade=match,
+                                matched=True,
+                                flag="MATCH",
+                                reason=f"Matched | price_diff={best_price_diff}",
+                                time_diff=0.0,
+                                price_diff=best_price_diff,
+                                time_mismatch=False,
+                                price_mismatch=False,
+                            )
                         )
-                    )
+                    else:
+                        results.append(
+                            MatchResult(
+                                backtest_trade=bt,
+                                live_trade=match,
+                                matched=False,
+                                flag="PRICE MISMATCH",
+                                reason=f"Price mismatch | price_diff={best_price_diff}",
+                                time_diff=0.0,
+                                price_diff=best_price_diff,
+                                time_mismatch=False,
+                                price_mismatch=True,
+                            )
+                        )
 
                 else:
                     # 3️⃣ Diagnose miss reason

@@ -13,8 +13,13 @@ def get_clients():
             settings.backoffice_mongo_uri,
             serverSelectionTimeoutMS=5000
             )
-        db = client[settings.backoffice_mongo_db]
-        collection = db[settings.backoffice_live_trade_collection]
+        nb_db = client[settings.nb_backoffice_mongo_db]
+        nb_collection = nb_db[settings.nb_backoffice_live_trade_collection]
+        alpha_collection = nb_db[settings.alpha_backoffice_live_trade_collection]
+        all_brokers_db = client[settings.all_brokers_backoffice_db]
+        all_collection = all_brokers_db[settings.all_brokers_live_trade_collection]
+
+        collections = [nb_collection, all_collection, alpha_collection]
 
         client.admin.command("ping")
     except errors.ServerSelectionTimeoutError:
@@ -32,8 +37,9 @@ def get_clients():
     try:
         clients: Set[str] = set()
 
-        distinct_clients = collection.distinct("clientID")
-        clients.update(distinct_clients)
+        for collection in collections:
+            distinct_clients = collection.distinct("clientID")
+            clients.update(distinct_clients)
 
         return sorted(clients)
     except Exception as e:

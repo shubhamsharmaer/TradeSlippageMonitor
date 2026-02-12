@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from config import settings
-from routes import mismatch, get_bt_algo, get_lt_algo, get_clients
+from routes import mismatch, get_bt_algo, get_lt_algo, get_clients, get_brokers
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -19,7 +19,7 @@ app.include_router(mismatch.router)
 app.include_router(get_bt_algo.router)
 app.include_router(get_lt_algo.router)
 app.include_router(get_clients.router)
-
+app.include_router(get_brokers.router)
 
 @app.get("/health")
 async def get_health():

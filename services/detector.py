@@ -24,7 +24,7 @@ class MismatchDetector:
             matched = []
             missing = [] # in backtest but not in live
             extra = []  # in live but not in backtest
-            # time_mismatch = []
+            time_mismatch = []
             price_mismatch = []
 
             timeline_trades = timeline_trades
@@ -33,16 +33,18 @@ class MismatchDetector:
             for m in matches:
                 if m.backtest_trade and not m.live_trade:
                     missing.append(self._missing_trade(m))
-                elif not m.backtest_trade and m.live_trade:
+
+                if not m.backtest_trade and m.live_trade:
                     extra.append(self._extra_trade(m))
-                elif m.matched:
+                
+                if m.matched:
                     matched.append(self._matched_trade(m))
 
-                    # if m.time_mismatch:
-                    #     time_mismatch.append(self._time_mismatch(m))
+                if m.time_mismatch:
+                        time_mismatch.append(self._time_mismatch(m))
 
-                    if m.price_mismatch:
-                        price_mismatch.append(self._price_mismatch(m))
+                if m.price_mismatch:
+                    price_mismatch.append(self._price_mismatch(m))
             
             summary = self._build_summary(matches, missing, extra, matched, price_mismatch)
 
@@ -54,7 +56,7 @@ class MismatchDetector:
                 extra_trades=extra,
                 missing_trades=missing,
                 matched_trades=matched,
-                # time_mismatches=time_mismatch,
+                time_mismatches=time_mismatch,
                 price_mismatches=price_mismatch,
                 summary=summary
             )
@@ -85,7 +87,7 @@ class MismatchDetector:
             mismatch_type=match.reason
         )
 
-    # def _time_mismatch(self, match: MatchResult) -> TradeMismatch:
+    def _time_mismatch(self, match: MatchResult) -> TradeMismatch:
         return TradeMismatch(
             lt_trade=match.live_trade,
             bt_trade=match.backtest_trade,
@@ -98,7 +100,7 @@ class MismatchDetector:
         return TradeMismatch(
             lt_trade=match.live_trade,
             bt_trade=match.backtest_trade,
-            mismatch_type="PRICE MISTMACT",
+            mismatch_type="PRICE MISMATCH",
             expected=str(match.backtest_trade.price),
             actual=str(match.live_trade.price)
         )

@@ -12,8 +12,13 @@ def get_lt_algos():
             settings.backoffice_mongo_uri,
             serverSelectionTimeoutMS=5000
             )
-        db = client[settings.backoffice_mongo_db]
-        collection = db[settings.backoffice_live_trade_collection]
+        nb_db = client[settings.nb_backoffice_mongo_db]
+        nb_collection = nb_db[settings.nb_backoffice_live_trade_collection]
+        
+        all_brokers_db = client[settings.all_brokers_backoffice_db]
+        all_collection = all_brokers_db[settings.all_brokers_live_trade_collection]
+
+        collections = [nb_collection, all_collection]
 
         client.admin.command("ping")
     except errors.ServerSelectionTimeoutError:
@@ -29,10 +34,10 @@ def get_lt_algos():
         )
     
     try:
-        lt_algos: Set(str) = set()
-
-        distinct_algos = collection.distinct("algoname")
-        lt_algos.update(distinct_algos)
+        lt_algos: Set[str] = set()
+        for collection in collections:
+            distinct_algos = collection.distinct("algoname")
+            lt_algos.update(distinct_algos)
 
         return lt_algos
     

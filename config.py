@@ -8,9 +8,15 @@ class Settings(BaseSettings):
     mongo_db: str
 
     backoffice_mongo_uri: str
-    backoffice_mongo_db: str
-    backoffice_live_trade_collection: str
-    backoffice_algo_collection: str # for quantity_multiplier
+    nb_backoffice_mongo_db: str
+    nb_backoffice_live_trade_collection: str
+    nb_backoffice_algo_collection: str # for quantity_multiplier
+    alpha_backoffice_algo_collection: str # for quantity_multiplier of alpha
+    alpha_backoffice_live_trade_collection: str # for alpha live trades
+
+    all_brokers_backoffice_db: str
+    all_brokers_live_trade_collection: str
+    all_brokers_algo_collection: str # for quantity_multiplier
 
     finsage_mongo_uri: str
     finsage_mongo_db: str

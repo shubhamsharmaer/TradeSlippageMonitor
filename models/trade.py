@@ -19,7 +19,8 @@ class NormalizedTrade(BaseModel):
     quantity: int
 
     # Matching metadata
-    trade_time: Optional[datetime] 
+    trade_time: Optional[datetime]
+    broker: Optional[str] = None 
     # normalized_symbol: str 
 
     # raw_data: dict  # Store original record for debugging
@@ -51,5 +52,6 @@ class LiveTradeRecord(BaseModel):
     clientID: str
     orderSentTime: float
     normalized_quantity: Optional[int] = 1
+    broker: str
     # trade_time: datetime
  

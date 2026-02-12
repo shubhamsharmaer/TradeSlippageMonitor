@@ -9,6 +9,15 @@ from logger_setup import logger
 
 normalized_quantity_repo = NormalizedQuantity()
 
+def safe_float(val, default=0.0):
+    try:
+        if val in (None, "", " ", "-", "null"):
+            return default
+        return float(str(val).replace(",", "").strip())
+    except (ValueError, TypeError):
+        return default
+
+
 def normalize_backtest_record(
     records: List[BacktestRecord],
     # algoname: str,
@@ -91,6 +100,7 @@ def normalize_live_trade_record(
             trade_time_rounded = trade_time.replace(microsecond=0, second=0)
             trade_date_str = trade_time.date().isoformat()
             normalized_quantity = normalized_quantity_repo.get_normalized_quantity(
+                broker=record.broker,
                 algoname = record.algoname,
                 clientID= record.clientID,
                 original_quantity= record.quantity,
@@ -104,7 +114,7 @@ def normalize_live_trade_record(
                 symbol=record.symbol,
                 clientID=record.clientID,
                 trade_type=record.buy_sell,
-                price=float(record.OrderAverageTradedPrice),
+                price=safe_float(record.OrderAverageTradedPrice),
                 quantity=normalized_quantity,
                 trade_time=trade_time_rounded,
                 # raw_data=record.dict(by_alias=True),

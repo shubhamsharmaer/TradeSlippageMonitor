@@ -31,21 +31,34 @@ class TradeMatchingFlowService:
 
         self.timeline = TimelineMakerService()
 
-    def reconcile(self, backtest_algo: str, live_algo: str, start_date: date, end_date: date, clientId: Optional[str] = None):
+    def reconcile(
+            self, 
+            backtest_algo: str, 
+            live_algo: str, 
+            start_date: date, 
+            end_date: date, 
+            time_tolerance_minutes: int,
+            price_tolerance: float,
+            clientId: Optional[str] = None, 
+            broker: str = None,
+        ):
         if clientId:
             return self._reconcile_for_client(
                 backtest_algo,
                 live_algo,
                 start_date,
                 end_date,
-                clientId
+                time_tolerance_minutes=time_tolerance_minutes,
+                price_tolerance=price_tolerance,
+                clientId=clientId,
+                broker=broker
             )
         
         # if not client is selected || ALL CLIENTS CASE
         clients = self.live_repo._get_distinct_clients(
             algoname=live_algo,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
         )
 
         results = {}
@@ -57,7 +70,10 @@ class TradeMatchingFlowService:
                 live_algo=live_algo,
                 start_date=start_date,
                 end_date=end_date,
-                clientId=cid
+                time_tolerance_minutes=time_tolerance_minutes,
+                price_tolerance=price_tolerance,
+                clientId=cid,
+                broker=broker,
             )
 
         return results
@@ -69,7 +85,10 @@ class TradeMatchingFlowService:
         live_algo: str,
         start_date: date,
         end_date: date,
+        time_tolerance_minutes: int,
+        price_tolerance: float,
         clientId: str,
+        broker: str,
     ):
 
         # load bt trades
@@ -85,7 +104,8 @@ class TradeMatchingFlowService:
             algoname=live_algo,
             start_date=start_date,
             end_date=end_date,
-            clientId=clientId
+            clientId=clientId,
+            broker=broker
         )
 
         if len(bt_trades) == 0:
@@ -97,7 +117,6 @@ class TradeMatchingFlowService:
         # normalize both trades
         normalized_bt_trades = normalize_backtest_record(
             records=bt_trades,
-            # algoname=bt_trades.algoname
         )
 
         normalized_lt_trades = normalize_live_trade_record(
@@ -111,20 +130,14 @@ class TradeMatchingFlowService:
             end_date=end_date
         )
         df = timeline_rows([timeline])
-        df.to_csv("trade_timeline.csv", index=False)
+        # df.to_csv("trade_timeline.csv", index=False)
 
-
-        # matches = self.matcher.match_trades(
-        #     backtest_trades=normalized_bt_trades,
-        #     live_trades=normalized_lt_trades
-        # )
-
-        matches = self.matcher.match_trades(timeline)
+        matches = self.matcher.match_trades(timeline, time_tolerance_minutes, price_tolerance)
 
         df = results_to_csv(timeline=timeline, match_results=matches)
-        df.to_csv('matches_results.csv', index=False)
+        # df.to_csv('matches_results.csv', index=False)
         df = results_to_csv_split(match_results=matches)
-        df.to_csv(f'{live_algo}_split_results.csv', index=False)
+        # df.to_csv(f'{live_algo}_split_results.csv', index=False)
 
         report = self.detector.analyze(matches, timeline)
 
