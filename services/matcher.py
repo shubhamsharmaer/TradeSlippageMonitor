@@ -39,12 +39,10 @@ class TradeMatchingEngine:
     """Matches trades using a timeline-first approach.
     Time is already aligned by timeline, so matcher focuses on
     symbol, trade_type, quantity, price."""
-    # def __init__(self, time_tolerance_minutes: int = 1, price_tolerance: float = 25.0):
-    #     self.time_tolerance = timedelta(minutes=time_tolerance_minutes)
-    #     self.price_tolerance = price_tolerance
-    
-    def match_trades(self, timeline: TradeTimeline, time_tolerance_minutes: int, price_tolerance: float) -> List[MatchResult]:
+    def __init__(self, time_tolerance_minutes: int = 1):
         self.time_tolerance = timedelta(minutes=time_tolerance_minutes)
+    
+    def match_trades(self, timeline: TradeTimeline, price_tolerance: float, check_qnt: bool) -> List[MatchResult]:
         self.price_tolerance = price_tolerance
 
         results: List[MatchResult] = []
@@ -68,7 +66,10 @@ class TradeMatchingEngine:
                     if (
                         lt.symbol == bt.symbol
                         and lt.trade_type == bt.trade_type
-                        and (lt.quantity % bt.quantity == 0)
+                        and (
+                            not check_qnt
+                            or (lt.quantity == bt.quantity)
+                        )
                     ):
                         price_diff = round(abs(lt.price - bt.price), 2)
 
