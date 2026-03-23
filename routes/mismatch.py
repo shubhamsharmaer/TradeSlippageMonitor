@@ -14,15 +14,15 @@ class LeakRequest(BaseModel):
     backtest_algo: str
     start_date: date
     end_date: date
-    time_tolerance_minutes: int
     price_tolerance: float
     clientId: Optional[str] = None
+    min_price_for_hedge: Optional[float] = None
+    check_qnt: Optional[bool] = False
     broker: Optional[str] = None
 
 @router.post('/leak')
 def find_mismatch(payload: LeakRequest
 ):
-
   
     try:
         results = service.reconcile(
@@ -30,9 +30,10 @@ def find_mismatch(payload: LeakRequest
             live_algo=payload.live_algo,
             start_date=payload.start_date,
             end_date=payload.end_date,
-            time_tolerance_minutes=payload.time_tolerance_minutes,
             price_tolerance=payload.price_tolerance,
             clientId=payload.clientId,
+            min_price_for_hedge=payload.min_price_for_hedge,
+            check_qnt=payload.check_qnt,
             broker=payload.broker
         )
 

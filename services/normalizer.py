@@ -81,11 +81,11 @@ def normalize_backtest_record(
         logger.error("❌ Something went wrong in backtesting normalization")
 
 def normalize_live_trade_record(
-    records: List[LiveTradeRecord]
+    records: List[LiveTradeRecord],
+    min_price_for_hedge: Optional[float] = None
 ) -> List[NormalizedTrade]:
     """Convert LiveTradeRecord to NormalizedTrade"""
     # try:
-
     normalized: List[NormalizedTrade] = []
     logger.info(f"🔃 Normalizing {len(records)} live trades")
 
@@ -95,7 +95,13 @@ def normalize_live_trade_record(
                 record.orderSentTime,
                 tz=timezone.utc
                 )
-            
+            # remove hedges
+            safe_price = safe_float(record.OrderAverageTradedPrice)
+
+            if min_price_for_hedge is not None:
+                if safe_price <= min_price_for_hedge:
+                    continue
+
             # trade_time_naive = trade_time.replace(tzinfo=None)
             trade_time_rounded = trade_time.replace(microsecond=0, second=0)
             trade_date_str = trade_time.date().isoformat()
@@ -106,21 +112,22 @@ def normalize_live_trade_record(
                 original_quantity= record.quantity,
                 trade_date= trade_date_str
             )
-            
+                
             normalized_trade = NormalizedTrade(
-                # trade_id=record.id,
-                source="live",
-                algoname=record.algoname,
-                symbol=record.symbol,
-                clientID=record.clientID,
-                trade_type=record.buy_sell,
-                price=safe_float(record.OrderAverageTradedPrice),
-                quantity=normalized_quantity,
-                trade_time=trade_time_rounded,
-                # raw_data=record.dict(by_alias=True),
-            )
+                    # trade_id=record.id,
+                    source="live",
+                    algoname=record.algoname,
+                    symbol=record.symbol,
+                    clientID=record.clientID,
+                    trade_type=record.buy_sell,
+                    price=safe_price,
+                    quantity=normalized_quantity,
+                    trade_time=trade_time_rounded,
+                    # raw_data=record.dict(by_alias=True),
+                )
 
             normalized.append(normalized_trade)
+
     logger.info(f"✅ All Live Trades Normalized")
     return normalized
     # except Exception as e:

@@ -15,6 +15,7 @@ from services.detector import MismatchDetector
 from services.timeline_maker import TimelineMakerService
 from helpers.timeline_csv import timeline_rows
 from helpers.matchresult_csv import results_to_csv, results_to_csv_split
+import pandas as pd
 
 class NoBacktestTrades(Exception):
     pass
@@ -37,9 +38,10 @@ class TradeMatchingFlowService:
             live_algo: str, 
             start_date: date, 
             end_date: date, 
-            time_tolerance_minutes: int,
             price_tolerance: float,
             clientId: Optional[str] = None, 
+            min_price_for_hedge: Optional[float] = None,
+            check_qnt: Optional[bool] = False,
             broker: str = None,
         ):
         if clientId:
@@ -48,9 +50,10 @@ class TradeMatchingFlowService:
                 live_algo,
                 start_date,
                 end_date,
-                time_tolerance_minutes=time_tolerance_minutes,
                 price_tolerance=price_tolerance,
                 clientId=clientId,
+                min_price_for_hedge=min_price_for_hedge,
+                check_qnt=check_qnt,
                 broker=broker
             )
         
@@ -70,9 +73,10 @@ class TradeMatchingFlowService:
                 live_algo=live_algo,
                 start_date=start_date,
                 end_date=end_date,
-                time_tolerance_minutes=time_tolerance_minutes,
                 price_tolerance=price_tolerance,
                 clientId=cid,
+                min_price_for_hedge=min_price_for_hedge,
+                check_qnt=check_qnt,
                 broker=broker,
             )
 
@@ -85,9 +89,10 @@ class TradeMatchingFlowService:
         live_algo: str,
         start_date: date,
         end_date: date,
-        time_tolerance_minutes: int,
         price_tolerance: float,
         clientId: str,
+        min_price_for_hedge: float,
+        check_qnt: bool,
         broker: str,
     ):
 
@@ -120,8 +125,12 @@ class TradeMatchingFlowService:
         )
 
         normalized_lt_trades = normalize_live_trade_record(
-            records=lt_trades
+            records=lt_trades,
+            min_price_for_hedge = min_price_for_hedge
         )
+
+        # df = pd.DataFrame(normalized_lt_trades)
+        # df.to_csv('hedge.csv')
 
         timeline = self.timeline.timeline_builder(
             backtest_trades=normalized_bt_trades,
@@ -129,14 +138,14 @@ class TradeMatchingFlowService:
             start_date=start_date,
             end_date=end_date
         )
-        df = timeline_rows([timeline])
+        # df = timeline_rows([timeline])
         # df.to_csv("trade_timeline.csv", index=False)
 
-        matches = self.matcher.match_trades(timeline, time_tolerance_minutes, price_tolerance)
+        matches = self.matcher.match_trades(timeline, price_tolerance, check_qnt)
 
-        df = results_to_csv(timeline=timeline, match_results=matches)
+        # df = results_to_csv(timeline=timeline, match_results=matches)
         # df.to_csv('matches_results.csv', index=False)
-        df = results_to_csv_split(match_results=matches)
+        # df = results_to_csv_split(match_results=matches)
         # df.to_csv(f'{live_algo}_split_results.csv', index=False)
 
         report = self.detector.analyze(matches, timeline)
