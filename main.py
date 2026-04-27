@@ -3,8 +3,20 @@ from config import settings
 from routes import mismatch, get_bt_algo, get_lt_algo, get_clients, get_brokers
 from fastapi.middleware.cors import CORSMiddleware
 
+from scout_apm.api import Config
+from scout_apm.async_.starlette import ScoutMiddleware
+
+
+
+Config.set(
+    key="nS5gkS1eyPEPVMsyedNl",
+    name="Leakage Backend",
+    monitor=True,
+)
 
 app = FastAPI(title="LiveToBacktestSlippage")
+
+app.add_middleware(ScoutMiddleware)
 
 # CORS setup
 app.add_middleware(

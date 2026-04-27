@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     finsage_mongo_db: str
     backtest_trade_collection: str
 
+    # auto backtest config uri is same as finsage_mongo_uri
+    auto_backtest_db: str
+    auto_backtest_collection: str
+
     class Config:
         env_file = ".env"
 

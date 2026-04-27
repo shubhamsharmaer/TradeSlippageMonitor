@@ -14,7 +14,11 @@ def get_bt_algo():
             serverSelectionTimeoutMS=5000
             )
         db = client[settings.finsage_mongo_db]
+        auto_db = client[settings.auto_backtest_db]
+        auto_collection = auto_db[settings.auto_backtest_collection]
         collection = db[settings.backtest_trade_collection]
+
+        combined_collection = [auto_collection, collection]
 
         client.admin.command("ping")
     
@@ -31,8 +35,9 @@ def get_bt_algo():
         )
     try:
         bt_algos: Set(str) = set() 
-        distinct_algos = collection.distinct("strategy")
-        bt_algos.update(distinct_algos)
+        for collection in combined_collection:
+            distinct_algos = collection.distinct("strategy")
+            bt_algos.update(distinct_algos)
         return bt_algos
     
     except Exception as e:

@@ -24,8 +24,12 @@ class BacktestRepo:
             tzinfo=timezone.utc)
         logger.info(f"✅ Connected to Backtest MongoDB")
         self.db = self.client[settings.finsage_mongo_db]
+        self.auto_db = self.client[settings.auto_backtest_db]
         # print(f"Using database: {settings.finsage_mongo_db}")
         self.collection = self.db[settings.backtest_trade_collection]
+        self.auto_collection = self.auto_db[settings.auto_backtest_collection]
+
+        self.combine_collection = [self.collection, self.auto_collection]
 
 
 
@@ -49,6 +53,7 @@ class BacktestRepo:
                 "$lte": datetime.combine(end_date, time.max, tzinfo=timezone.utc)
             }
         }
+
         logger.info(f"🔽 Fetching Backtest trades: Algo {algoname} from {start_date} to {end_date}")
         projection = {
             "_id": 0,
@@ -63,27 +68,29 @@ class BacktestRepo:
             "ExitType": 1,
             "strategy": 1
         }
-        cursor = self.collection.find(query, projection).sort("Key", 1)
-        logger.info(f"✅ All Backtest trades fetched")
-        for row in cursor:
-            try:
-                record = BacktestRecord(
-                    EntryTime=row["Key"],
-                    ExitTime=row["ExitTime"],
-                    symbol=row["Symbol"],
-                    EntryPrice=row["EntryPrice"],
-                    ExitPrice=row["ExitPrice"],
-                    Quantity=row["Quantity"],
-                    # Quantity=65,
-                    PositionStatus=row["PositionStatus"],
-                    Pnl=row["Pnl"],
-                    ExitType=row["ExitType"],
-                    strategy=row["strategy"]
-                )
+        for collection in self.combine_collection:
+            cursor = collection.find(query, projection).sort("Key", 1)
+        
+            logger.info(f"✅ All Backtest trades fetched")
+            for row in cursor:
+                try:
+                    record = BacktestRecord(
+                        EntryTime=row["Key"],
+                        ExitTime=row["ExitTime"],
+                        symbol=row["Symbol"],
+                        EntryPrice=row["EntryPrice"],
+                        ExitPrice=row["ExitPrice"],
+                        Quantity=row["Quantity"],
+                        # Quantity=65,
+                        PositionStatus=row["PositionStatus"],
+                        Pnl=row["Pnl"],
+                        ExitType=row["ExitType"],
+                        strategy=row["strategy"]
+                    )
 
-                trades.append(record)
+                    trades.append(record)
 
-            except Exception as e:
-                print(f"Error parsing row: {row}. Error: {e}")
-                raise e
+                except Exception as e:
+                    print(f"Error parsing row: {row}. Error: {e}")
+                    raise e
         return trades

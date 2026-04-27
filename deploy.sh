@@ -1,1 +1,1 @@
-pm2 start main.py --name "Leakage Backend" --interpreter /root/LeakageDetectorBackend/venv/bin/python3.10 --no-autorestart
+pm2 start main.py --name "Leakage Backend" --interpreter /root/LeakageDetectorBackend/venv/bin/python3.10 --time --restart-delay=3000
