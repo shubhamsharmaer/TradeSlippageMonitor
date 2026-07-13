@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     auto_backtest_db: str
     auto_backtest_collection: str
 
+    # mcp auth
+    MCP_BEARER_TOKEN: str
+
     class Config:
         env_file = ".env"
 

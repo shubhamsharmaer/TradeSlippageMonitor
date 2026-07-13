@@ -31,7 +31,12 @@ class BacktestRepo:
 
         self.combine_collection = [self.collection, self.auto_collection]
 
-
+    def list_strategies(self) -> list[str]:
+        """List all unique strategies in the backtest collections."""
+        strategies = set()
+        for collection in self.combine_collection:
+            strategies.update(collection.distinct("strategy"))
+        return sorted(strategies)
 
 
     def load_trades(self, algoname: str, start_date: datetime, end_date: datetime) -> List[BacktestRecord]:

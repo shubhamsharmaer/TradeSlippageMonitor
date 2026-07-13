@@ -48,6 +48,27 @@ class LiveTradeRepo:
     #         current_date += timedelta(days=1)
     #     return collections
 
+    def list_algonames(self) -> List[str]:
+        """Fetch all unique algorithm names."""
+        algonames = set()
+        for collection in self.collections:
+            algonames.update(collection.distinct("algoname"))
+        return sorted(algonames)
+    
+    def list_clients(self) -> List[str]:
+        """Fetch all unique client IDs."""
+        clients = set()
+        for collection in self.collections:
+            clients.update(collection.distinct("clientID"))
+        return sorted(clients)
+    
+    def list_brokers(self) -> List[str]:
+        """Fetch all unique brokers."""
+        brokers = set()
+        for collection in self.collections:
+            brokers.update(collection.distinct("broker"))
+        return sorted(brokers)
+
 
     def _get_distinct_clients(self, algoname: str, start_date: date, end_date: date) -> List[str]:
         collections = self.collections

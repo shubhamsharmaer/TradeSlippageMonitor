@@ -23,9 +23,9 @@ class NoLiveTrades(Exception):
     pass
 
 class TradeMatchingFlowService:
-    def __init__(self):
-        self.backtest_repo = BacktestRepo()
-        self.live_repo = LiveTradeRepo()
+    def __init__(self, live_repo: LiveTradeRepo | None = None, backtest_repo: BacktestRepo | None = None):
+        self.backtest_repo = backtest_repo or BacktestRepo()
+        self.live_repo = live_repo or LiveTradeRepo()
 
         self.matcher = TradeMatchingEngine()
         self.detector = MismatchDetector()

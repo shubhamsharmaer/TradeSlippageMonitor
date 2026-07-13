@@ -4,10 +4,12 @@ from typing import Optional
 from pydantic import BaseModel
 from datetime import date
 import traceback
+from dependency import flow_service
 
 router = APIRouter(prefix="/api", tags=["Find Leakage"])
 
-service = TradeMatchingFlowService()
+# service = TradeMatchingFlowService()
+# flow_service = flow_service
 
 class LeakRequest(BaseModel):
     live_algo: str
@@ -25,7 +27,7 @@ def find_mismatch(payload: LeakRequest
 ):
   
     try:
-        results = service.reconcile(
+        results = flow_service.reconcile(
             backtest_algo=payload.backtest_algo,
             live_algo=payload.live_algo,
             start_date=payload.start_date,
