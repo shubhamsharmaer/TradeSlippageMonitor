@@ -1,19 +1,7 @@
 from fastmcp import FastMCP
-from fastmcp.server.auth.providers.jwt import StaticTokenVerifier
-from config import settings
 from datetime import date
 from typing import Optional
 from dependency import backtest_repo, live_repo, flow_service
-
-verifier = StaticTokenVerifier(
-    tokens={
-        settings.MCP_BEARER_TOKEN: {
-            "client_id": "leakage-admin",
-            "scopes": ["leakage:read", "leakage:run"],
-        }
-    },
-    required_scopes=["leakage:read"],
-)
 
 mcp = FastMCP(
     name="Leakage Detector",
@@ -22,7 +10,6 @@ mcp = FastMCP(
         "Call list_backtest_algos to discover available strategies before "
         "running detection."
     ),
-    auth=verifier,
 )
 
 @mcp.tool()

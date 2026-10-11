@@ -26,9 +26,6 @@ class Settings(BaseSettings):
     auto_backtest_db: str = "demo_finsage_db"
     auto_backtest_collection: str = "auto_backtest_demo"
 
-    # mcp auth
-    MCP_BEARER_TOKEN: str | None = None
-
     class Config:
         env_file = ".env"
         extra = "ignore"
