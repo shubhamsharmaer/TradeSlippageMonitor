@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     auto_backtest_collection: str = "auto_backtest_demo"
 
     # mcp auth
-    MCP_BEARER_TOKEN: str
+    MCP_BEARER_TOKEN: str | None = None
 
     class Config:
         env_file = ".env"
