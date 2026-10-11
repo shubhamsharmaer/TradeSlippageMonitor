@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Slippage Monitor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f3f6f8;
+        --bg-strong: #e9eff2;
+        --page-gradient: linear-gradient(135deg, #f8fafb 0%, #eef4f5 100%);
+        --panel: rgba(255, 255, 255, 0.9);
+        --panel-strong: #ffffff;
+        --topbar-bg: rgba(255, 255, 255, 0.9);
+        --calendar-bg: rgba(255, 255, 255, 0.8);
+        --surface-soft: linear-gradient(180deg, #ffffff, #f3f7f8);
+        --summary-gradient: linear-gradient(180deg, #ffffff, #f4f7f8);
+        --input-bg: #ffffff;
+        --table-bg: rgba(255, 255, 255, 0.88);
+        --table-head-bg: rgba(15, 23, 42, 0.03);
+        --hover-bg: rgba(15, 23, 42, 0.04);
+        --selected-bg: #ffffff;
+        --count-bg: rgba(15, 23, 42, 0.06);
+        --green-ink: #087454;
+        --line: rgba(20, 39, 51, 0.1);
+        --line-strong: rgba(20, 39, 51, 0.2);
+        --primary-border: rgba(7, 143, 104, 0.28);
+        --text: #111820;
+        --muted: #4d5b68;
+        --soft: #758392;
+        --primary: #078f68;
+        --primary-soft: rgba(7, 143, 104, 0.1);
+        --cyan: #087fae;
+        --green: #078f68;
+        --green-soft: rgba(7, 143, 104, 0.1);
+        --amber: #9a6508;
+        --amber-soft: rgba(255, 176, 32, 0.12);
+        --red: #bc4259;
+        --red-soft: rgba(188, 66, 89, 0.1);
+        --purple: #087fae;
+        --purple-soft: rgba(8, 127, 174, 0.1);
+        --focus-ring: rgba(7, 143, 104, 0.18);
+        --grid-line: rgba(17, 24, 32, 0.035);
+        --ambient-primary: rgba(16, 185, 129, 0.035);
+        --ambient-secondary: rgba(14, 165, 233, 0.025);
+        --shadow: 0 12px 32px rgba(14, 31, 40, 0.07);
+        --button-start: #0b9f76;
+        --button-end: #168fc1;
+        --button-text: #ffffff;
+        --button-shadow: rgba(7, 143, 104, 0.2);
+        --brand-start: #12d79a;
+        --brand-end: #39b9f3;
+        --brand-ink: #06110e;
+      }
+
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #06080c;
+        --bg-strong: #0d1118;
+        --page-gradient: linear-gradient(135deg, #06080c 0%, #090d13 100%);
+        --panel: rgba(13, 17, 24, 0.94);
+        --panel-strong: #10151d;
+        --topbar-bg: rgba(13, 17, 24, 0.94);
+        --calendar-bg: rgba(13, 17, 24, 0.92);
+        --surface-soft: linear-gradient(180deg, #111721, #0d1219);
+        --summary-gradient: linear-gradient(180deg, #111721, #0d1219);
+        --input-bg: #0b1017;
+        --table-bg: rgba(9, 13, 19, 0.96);
+        --table-head-bg: rgba(255, 255, 255, 0.035);
+        --hover-bg: rgba(255, 255, 255, 0.065);
+        --selected-bg: #151c25;
+        --count-bg: rgba(255, 255, 255, 0.08);
+        --green-ink: #9af2d1;
+        --line: rgba(223, 233, 244, 0.1);
+        --line-strong: rgba(223, 233, 244, 0.2);
+        --primary-border: rgba(34, 221, 165, 0.32);
+        --text: #edf2f9;
+        --muted: #a2aec1;
+        --soft: #78869a;
+        --primary: #22dda5;
+        --primary-soft: rgba(34, 221, 165, 0.13);
+        --cyan: #49bfff;
+        --green: #22dda5;
+        --green-soft: rgba(34, 221, 165, 0.13);
+        --amber: #ffb020;
+        --amber-soft: rgba(255, 176, 32, 0.13);
+        --red: #ff7186;
+        --red-soft: rgba(255, 113, 134, 0.13);
+        --purple: #49bfff;
+        --purple-soft: rgba(73, 191, 255, 0.13);
+        --focus-ring: rgba(34, 221, 165, 0.22);
+        --grid-line: rgba(222, 234, 247, 0.035);
+        --ambient-primary: rgba(34, 221, 165, 0.055);
+        --ambient-secondary: rgba(73, 191, 255, 0.045);
+        --shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+        --button-start: #20dba4;
+        --button-end: #43baff;
+        --button-text: #06100e;
+        --button-shadow: rgba(34, 221, 165, 0.18);
+        --brand-start: #12d79a;
+        --brand-end: #39b9f3;
+        --brand-ink: #06110e;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Inter Tight", "Segoe UI", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.5;
+        position: relative;
+        isolation: isolate;
+        background-color: var(--bg);
+        color: var(--text);
+        transition: background-color 240ms ease, color 240ms ease;
+      }
+
+      body::before,
+      body::after {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        content: "";
+        pointer-events: none;
+        transition: opacity 280ms ease;
+      }
+
+      body::before {
+        background-image:
+          linear-gradient(var(--grid-line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+          var(--page-gradient);
+        background-size: 64px 64px, 64px 64px, auto;
+        opacity: 1;
+      }
+
+      body::after {
+        background:
+          radial-gradient(ellipse at 18% 4%, var(--ambient-primary), transparent 42%),
+          radial-gradient(ellipse at 82% 10%, var(--ambient-secondary), transparent 38%);
+        opacity: 0.65;
+      }
+
+      :root[data-theme="dark"] body::before {
+        opacity: 0;
+      }
+
+      :root[data-theme="dark"] body::after {
+        opacity: 1;
+      }
+
+      .container {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 32px 20px 56px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 26px;
+        padding: 18px 22px;
+        background: var(--topbar-bg);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand-mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+        display: grid;
+        place-items: center;
+        color: var(--brand-ink);
+        font-size: 18px;
+        font-weight: 800;
+        box-shadow: 0 8px 22px var(--button-shadow);
+      }
+
+      .brand h2 {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+      }
+
+      .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .theme-toggle {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        place-items: center;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--input-bg);
+        color: var(--text);
+        box-shadow: none;
+        transition: background-color 240ms ease, color 240ms ease, border-color 240ms ease, transform 180ms ease;
+      }
+
+      .theme-toggle:hover {
+        transform: translateY(-1px);
+        border-color: var(--primary);
+        box-shadow: none;
+      }
+
+      .theme-toggle:focus-visible {
+        outline: 3px solid var(--primary-soft);
+        outline-offset: 2px;
+      }
+
+      .theme-icon {
+        width: 19px;
+        height: 19px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.8;
+        transition: transform 240ms ease, opacity 180ms ease;
+      }
+
+      .theme-icon-sun { display: none; }
+
+      :root[data-theme="dark"] .theme-icon-moon { display: none; }
+      :root[data-theme="dark"] .theme-icon-sun { display: block; }
+
+      .pill {
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+        background: var(--purple-soft);
+        color: var(--purple);
+        border: 1px solid var(--line-strong);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.35fr 0.95fr;
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+      }
+
+      .hero-copy {
+        padding: 24px 26px;
+      }
+
+      .eyebrow {
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 11px;
+        font-weight: 800;
+        margin-bottom: 12px;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-family: "Inter Tight", "Segoe UI", sans-serif;
+        font-size: 35px;
+        font-weight: 800;
+        line-height: 1.08;
+      }
+
+      .hero-copy p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+        font-size: 15px;
+        font-weight: 400;
+      }
+
+      .mini-panel {
+        padding: 22px 20px;
+      }
+
+      .mini-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .mini-box {
+        background: var(--surface-soft);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+      }
+
+      .mini-box .label {
+        display: block;
+        color: var(--soft);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .mini-box .value {
+        font-size: 1.5rem;
+        font-weight: 800;
+      }
+
+      .panel {
+        padding: 22px 22px 18px;
+      }
+
+      .controls-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .field label {
+        color: var(--soft);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+      }
+
+      .field-hint {
+        color: var(--soft);
+        font-size: 11px;
+      }
+
+      input, select, button {
+        width: 100%;
+        border: 1px solid var(--line-strong);
+        background: var(--input-bg);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 14px;
+      }
+
+      input:focus, select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--focus-ring);
+      }
+
+      button {
+        border: none;
+        background: linear-gradient(135deg, var(--button-start), var(--button-end));
+        color: var(--button-text);
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 8px 20px var(--button-shadow);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 240ms ease, color 240ms ease, border-color 240ms ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px var(--button-shadow);
+      }
+
+      .status {
+        margin: 16px 0 18px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(130px, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .summary-box {
+        padding: 16px 14px;
+        border-radius: 16px;
+        background: var(--summary-gradient);
+        border: 1px solid var(--line);
+      }
+
+      .summary-box .label {
+        display: block;
+        color: var(--soft);
+        font-size: 11px;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      .summary-box .value {
+        font-size: clamp(1.5rem, 2vw, 2rem);
+        font-weight: 800;
+      }
+
+      .summary-box.matched .value { color: var(--green); }
+      .summary-box.missing .value { color: var(--amber); }
+      .summary-box.extra .value { color: var(--red); }
+      .summary-box.rate .value { color: var(--primary); }
+
+      .table-wrap {
+        margin-top: 18px;
+        background: var(--table-bg);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        overflow-x: auto;
+      }
+
+      .table-toolbar {
+        display: flex;
+        justify-content: flex-start;
+        margin-top: 18px;
+      }
+
+      .table-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 5px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--table-bg);
+      }
+
+      .table-filter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: auto;
+        min-height: 36px;
+        padding: 7px 10px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--muted);
+        box-shadow: none;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .table-filter:hover {
+        transform: none;
+        box-shadow: none;
+        background: var(--hover-bg);
+      }
+
+      .table-filter[aria-pressed="true"] {
+        border-color: var(--line);
+        background: var(--selected-bg);
+        color: var(--text);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+      }
+
+      .filter-count {
+        display: inline-grid;
+        min-width: 20px;
+        height: 20px;
+        place-items: center;
+        padding: 0 5px;
+        border-radius: 999px;
+        background: var(--count-bg);
+        color: var(--muted);
+        font-size: 10px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      table {
+        width: 100%;
+        min-width: 1040px;
+        border-collapse: collapse;
+      }
+
+      thead {
+        background: var(--table-head-bg);
+      }
+
+      th, td {
+        padding: 14px 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--soft);
+        font-weight: 800;
+      }
+
+      .sort-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: auto;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        box-shadow: none;
+        font-size: inherit;
+        font-weight: inherit;
+        letter-spacing: inherit;
+        text-transform: inherit;
+        white-space: nowrap;
+      }
+
+      .sort-button:hover {
+        transform: none;
+        box-shadow: none;
+        color: var(--primary);
+      }
+
+      .sort-indicator {
+        color: var(--primary);
+        font-size: 12px;
+      }
+
+      .trade-group {
+        text-align: center;
+        background: var(--table-head-bg);
+      }
+
+      .trade-subhead {
+        min-width: 76px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        font-size: 10px;
+      }
+
+      .symbol-cell {
+        min-width: 112px;
+        font-weight: 700;
+      }
+
+      .side-cell {
+        min-width: 80px;
+      }
+
+      .quantity-cell,
+      .price-cell {
+        min-width: 76px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .time-box {
+        min-width: 150px;
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .side-buy { color: var(--green); font-weight: 700; }
+      .side-sell { color: var(--red); font-weight: 700; }
+
+      .no-side-trade {
+        color: var(--soft);
+        font-size: 12px;
+        font-style: italic;
+      }
+
+      .trade-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .trade-chip.match { background: var(--green-soft); color: var(--green); }
+      .trade-chip.missing { background: var(--amber-soft); color: var(--amber); }
+      .trade-chip.extra { background: var(--red-soft); color: var(--red); }
+      .trade-chip.mismatch { background: var(--purple-soft); color: var(--purple); }
+
+      .trade-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 8px;
+      }
+
+      .meta-line {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .empty {
+        padding: 28px 16px;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      .calendar-panel {
+        margin: 0 0 20px;
+        padding: 12px 16px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--calendar-bg);
+      }
+
+      .calendar-toolbar,
+      .calendar-month-controls,
+      .date-mode {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .calendar-toolbar {
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .calendar-month-controls strong {
+        min-width: 130px;
+        text-align: center;
+      }
+
+      .calendar-nav,
+      .date-mode button {
+        width: auto;
+        min-width: 38px;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        background: var(--input-bg);
+        color: var(--text);
+        box-shadow: none;
+      }
+
+      .calendar-nav:hover,
+      .date-mode button:hover {
+        transform: none;
+        box-shadow: none;
+        border-color: var(--primary-border);
+      }
+
+      .date-mode button[aria-pressed="true"] {
+        border-color: var(--primary);
+        background: var(--primary-soft);
+        color: var(--primary);
+      }
+
+      .trade-day-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .trade-day {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        width: auto;
+        min-width: 100px;
+        min-height: 40px;
+        padding: 7px 11px;
+        border: 1px solid var(--primary-border);
+        border-radius: 10px;
+        background: var(--green-soft);
+        color: var(--green-ink);
+        box-shadow: none;
+      }
+
+      .trade-day:hover {
+        transform: translateY(-1px);
+        border-color: var(--primary);
+        box-shadow: none;
+      }
+
+      .trade-day::before {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        content: "";
+      }
+
+      .trade-day-label {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1px;
+      }
+
+      .trade-day-date {
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .trade-day-weekday {
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 600;
+      }
+
+      .trade-day.in-range {
+        background: var(--primary-soft);
+        border-color: var(--primary-border);
+        color: var(--primary);
+      }
+
+      .trade-day.is-selected {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: var(--button-text);
+      }
+
+      .trade-day.is-selected::before {
+        background: var(--button-text);
+      }
+
+      .topbar,
+      .card,
+      .mini-box,
+      .summary-box,
+      input,
+      select,
+      .table-wrap,
+      .table-filters,
+      .table-filter,
+      .filter-count,
+      .calendar-panel,
+      .calendar-nav,
+      .date-mode button,
+      .trade-day,
+      th,
+      td {
+        transition: color 240ms ease, background-color 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
+      }
+
+      .no-trading-days {
+        color: var(--soft);
+        font-size: 12px;
+        padding: 5px 0;
+      }
+
+      .trade-day-weekday {
+        color: inherit;
+        opacity: 0.75;
+      }
+
+      .calendar-legend {
+        display: none;
+        margin: 12px 0 0;
+        color: var(--soft);
+        font-size: 12px;
+      }
+
+      .brand h2,
+      .pill,
+      .eyebrow,
+      .mini-box .label,
+      .field label,
+      .summary-box .label,
+      th,
+      .sort-button,
+      .trade-chip {
+        letter-spacing: 0;
+      }
+
+      @media (max-width: 980px) {
+        .hero,
+        .controls-grid,
+        .summary-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .calendar-toolbar {
+          align-items: center;
+          flex-wrap: nowrap;
+          gap: 8px;
+        }
+
+        .calendar-panel {
+          padding: 10px;
+        }
+
+        .calendar-month-controls,
+        .date-mode {
+          gap: 5px;
+        }
+
+        .calendar-month-controls strong {
+          min-width: 82px;
+          font-size: 12px;
+        }
+
+        .calendar-nav,
+        .date-mode button {
+          min-width: 32px;
+          padding: 7px 6px;
+          font-size: 11px;
+        }
+
+        .trade-day-list {
+          gap: 5px;
+        }
+
+        .trade-day {
+          flex: 1 1 72px;
+          min-width: 72px;
+          justify-content: center;
+          padding: 6px 7px;
+        }
+      }
+        #runButton {
+          display: inline-flex;
+          width: auto;
+          min-width: 156px;
+          align-items: center;
+          justify-content: center;
+          padding: 11px 16px;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">S</div>
+          <h2>Slippage Monitor</h2>
+        </div>
+        <div class="topbar-actions">
+          <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme" aria-pressed="false">
+            <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z" /></svg>
+            <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" /></svg>
+          </button>
+          <div class="pill">Mock Data</div>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="card hero-copy">
+          <div class="eyebrow">Overview</div>
+          <h1>Monitor live and backtest trade slippage in one view.</h1>
+          <p>
+            Compare expected backtest executions with live fills, highlight mismatches, and review missing or extra trades in a single operational dashboard.
+          </p>
+        </div>
+
+        <div class="card mini-panel">
+          <div class="eyebrow">Quick Stats</div>
+          <div class="mini-grid">
+            <div class="mini-box">
+              <span class="label">Mode</span>
+              <span class="value">Mock</span>
+            </div>
+            <div class="mini-box">
+              <span class="label">Layer</span>
+              <span class="value">API</span>
+            </div>
+            <div class="mini-box">
+              <span class="label">Source</span>
+              <span class="value">JSON</span>
+            </div>
+            <div class="mini-box">
+              <span class="label">Focus</span>
+              <span class="value">Risk</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card panel">
+        <div class="controls-grid">
+          <div class="field">
+            <label for="live_algo">Live Algo</label>
+            <select id="live_algo"></select>
+          </div>
+
+          <div class="field">
+            <label for="backtest_algo">Backtest Algo</label>
+            <select id="backtest_algo"></select>
+          </div>
+
+          <div class="field">
+            <label for="client">Client ID</label>
+            <select id="client">
+              <option value="">All clients</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="start_date">Start Date</label>
+            <input id="start_date" type="date" value="2025-01-03" />
+          </div>
+
+          <div class="field">
+            <label for="end_date">End Date</label>
+            <input id="end_date" type="date" value="2025-01-05" />
+          </div>
+
+          <div class="field">
+            <label for="price_tolerance">Price tolerance (₹)</label>
+            <input id="price_tolerance" type="number" value="2.5" min="0" step="0.1" />
+            <span class="field-hint">Maximum allowed price difference.</span>
+          </div>
+        </div>
+
+        <div class="calendar-panel" aria-label="Trade calendar">
+          <div class="calendar-toolbar">
+            <div class="calendar-month-controls">
+              <button id="previousMonth" class="calendar-nav" type="button" aria-label="Previous month">&lt;</button>
+              <strong id="calendarMonthLabel"></strong>
+              <button id="nextMonth" class="calendar-nav" type="button" aria-label="Next month">&gt;</button>
+            </div>
+            <div class="date-mode" role="group" aria-label="Choose which date to set">
+              <button id="chooseStart" type="button" aria-pressed="true">Start</button>
+              <button id="chooseEnd" type="button" aria-pressed="false">End</button>
+            </div>
+          </div>
+          <div class="trade-day-list" id="tradeDayList" aria-label="Available trading days"></div>
+        </div>
+
+        <button id="runButton" type="button">Run Analysis</button>
+        <div id="status" class="status">Ready to compare trade flow.</div>
+
+        <div class="summary-grid" id="summary"></div>
+
+        <div class="table-toolbar">
+          <div class="table-filters" role="group" aria-label="Filter trades by result">
+            <button class="table-filter" type="button" data-filter="all" aria-pressed="true">All <span class="filter-count">0</span></button>
+            <button class="table-filter" type="button" data-filter="matched" aria-pressed="false">Match Trades <span class="filter-count">0</span></button>
+            <button class="table-filter" type="button" data-filter="mismatch" aria-pressed="false">Mismatch <span class="filter-count">0</span></button>
+            <button class="table-filter" type="button" data-filter="extra" aria-pressed="false">Extra <span class="filter-count">0</span></button>
+            <button class="table-filter" type="button" data-filter="missing" aria-pressed="false">Missing <span class="filter-count">0</span></button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="trade-group" colspan="4">Backtest Trade</th>
+                <th class="trade-group" rowspan="2" aria-sort="none"><button class="sort-button" data-sort="time" type="button">Trade Time <span class="sort-indicator" aria-hidden="true">↑</span></button></th>
+                <th class="trade-group" colspan="4">Live Trade</th>
+                <th class="trade-group" rowspan="2" aria-sort="none"><button class="sort-button" data-sort="category" type="button">Result <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+              </tr>
+              <tr>
+                <th class="trade-subhead" aria-sort="none"><button class="sort-button" data-sort="backtest.symbol" type="button">Symbol <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+                <th class="trade-subhead" aria-sort="none"><button class="sort-button" data-sort="backtest.trade_type" type="button">Side <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+                <th class="trade-subhead" aria-sort="none"><button class="sort-button" data-sort="backtest.quantity" type="button">Qty <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+                <th class="trade-subhead" aria-sort="none"><button class="sort-button" data-sort="backtest.price" type="button">Price (₹) <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+                <th class="trade-subhead" aria-sort="none"><button class="sort-button" data-sort="live.symbol" type="button">Symbol <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+                <th class="trade-subhead" aria-sort="none"><button class="sort-button" data-sort="live.trade_type" type="button">Side <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+                <th class="trade-subhead" aria-sort="none"><button class="sort-button" data-sort="live.quantity" type="button">Qty <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+                <th class="trade-subhead" aria-sort="none"><button class="sort-button" data-sort="live.price" type="button">Price (₹) <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+              </tr>
+            </thead>
+            <tbody id="tradeTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const themeToggle = document.getElementById('themeToggle');
+
+      function setTheme(theme, persist = true) {
+        const isDark = theme === 'dark';
+        document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+        const label = isDark ? 'Switch to light theme' : 'Switch to dark theme';
+        themeToggle.setAttribute('aria-label', label);
+        themeToggle.setAttribute('title', label);
+        themeToggle.setAttribute('aria-pressed', String(isDark));
+        if (persist) {
+          try {
+            localStorage.setItem('slippage-monitor-theme', isDark ? 'dark' : 'light');
+          } catch (error) {
+            console.warn('Theme preference could not be saved:', error);
+          }
+        }
+      }
+
+      let savedTheme = 'dark';
+      try {
+        savedTheme = localStorage.getItem('slippage-monitor-theme') || 'dark';
+      } catch (error) {
+        console.warn('Theme preference could not be loaded:', error);
+      }
+      setTheme(savedTheme, false);
+      themeToggle.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        setTheme(nextTheme);
+      });
+
+      const runButton = document.getElementById('runButton');
+      const statusEl = document.getElementById('status');
+      const summaryEl = document.getElementById('summary');
+      const tableBody = document.getElementById('tradeTableBody');
+      const tableFilters = document.querySelector('.table-filters');
+      const liveSelect = document.getElementById('live_algo');
+      const backtestSelect = document.getElementById('backtest_algo');
+      const clientSelect = document.getElementById('client');
+      const startDateInput = document.getElementById('start_date');
+      const endDateInput = document.getElementById('end_date');
+      const tradeDayList = document.getElementById('tradeDayList');
+      const calendarMonthLabel = document.getElementById('calendarMonthLabel');
+      const chooseStartButton = document.getElementById('chooseStart');
+      const chooseEndButton = document.getElementById('chooseEnd');
+      let calendarMonth = startDateInput.value.slice(0, 7) || '2025-01';
+      let activeDateField = 'start';
+      let tradeDates = new Set();
+      let currentRows = [];
+      let activeTradeFilter = 'all';
+      let sortState = { key: 'time', direction: 'asc' };
+
+      function formatDate(value) {
+        if (!value) return '—';
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return value;
+        return d.toLocaleString([], {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, character => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[character]);
+      }
+
+      function displayPrice(value) {
+        const price = Number(value);
+        return Number.isFinite(price) ? price.toFixed(2) : '—';
+      }
+
+      function renderTradeCells(trade) {
+        if (!trade) {
+          return '<td class="symbol-cell no-side-trade" colspan="4">No corresponding trade</td>';
+        }
+        const side = trade.trade_type || '—';
+        const sideClass = side === 'BUY' ? 'side-buy' : side === 'SELL' ? 'side-sell' : '';
+        return `
+          <td class="symbol-cell">${escapeHtml(trade.symbol || '—')}</td>
+          <td class="side-cell ${sideClass}">${escapeHtml(side)}</td>
+          <td class="quantity-cell">${escapeHtml(trade.quantity ?? '—')}</td>
+          <td class="price-cell">${escapeHtml(displayPrice(trade.price))}</td>
+        `;
+      }
+
+      function updateTradeFilters() {
+        const counts = {
+          all: currentRows.length,
+          matched: currentRows.filter(row => row.category === 'matched').length,
+          mismatch: currentRows.filter(row => row.category === 'mismatch').length,
+          extra: currentRows.filter(row => row.category === 'extra').length,
+          missing: currentRows.filter(row => row.category === 'missing').length,
+        };
+        tableFilters.querySelectorAll('[data-filter]').forEach(button => {
+          const filter = button.dataset.filter;
+          button.setAttribute('aria-pressed', String(filter === activeTradeFilter));
+          button.querySelector('.filter-count').textContent = counts[filter];
+        });
+      }
+
+      function renderFilteredRows() {
+        const rows = (activeTradeFilter === 'all'
+          ? currentRows
+          : currentRows.filter(row => row.category === activeTradeFilter))
+          .slice()
+          .sort(compareRows);
+        updateTradeFilters();
+        updateSortHeaders();
+
+        if (!rows.length) {
+          tableBody.innerHTML = '<tr><td colspan="10" class="empty">No trades in this category.</td></tr>';
+          return;
+        }
+
+        tableBody.innerHTML = rows.map(row => `
+          <tr>
+            ${renderTradeCells(row.backtest)}
+            <td class="time-box">${escapeHtml(formatDate(row.time))}</td>
+            ${renderTradeCells(row.live)}
+            <td><span class="trade-chip ${row.category}">${escapeHtml(row.label)}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      function sortValue(row) {
+        if (sortState.key === 'time') return row.time || null;
+        if (sortState.key === 'category') return row.label;
+        const [side, field] = sortState.key.split('.');
+        return row[side]?.[field] ?? null;
+      }
+
+      function compareRows(left, right) {
+        const leftValue = sortValue(left);
+        const rightValue = sortValue(right);
+        if (leftValue == null && rightValue != null) return 1;
+        if (rightValue == null && leftValue != null) return -1;
+        if (leftValue == null && rightValue == null) return 0;
+
+        const leftNumber = Number(leftValue);
+        const rightNumber = Number(rightValue);
+        const bothNumeric = String(leftValue).trim() !== '' && String(rightValue).trim() !== '' &&
+          Number.isFinite(leftNumber) && Number.isFinite(rightNumber);
+        const result = bothNumeric
+          ? leftNumber - rightNumber
+          : String(leftValue).localeCompare(String(rightValue), undefined, { numeric: true, sensitivity: 'base' });
+        return result * (sortState.direction === 'asc' ? 1 : -1);
+      }
+
+      function updateSortHeaders() {
+        document.querySelectorAll('.sort-button').forEach(button => {
+          const active = button.dataset.sort === sortState.key;
+          const header = button.closest('th');
+          header.setAttribute('aria-sort', active ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'none');
+          button.querySelector('.sort-indicator').textContent = active
+            ? (sortState.direction === 'asc' ? '↑' : '↓')
+            : '↕';
+        });
+      }
+
+      function renderSummary(report) {
+        const summary = report.summary || {};
+        const cards = [
+          { label: 'Matched', value: summary.matched_trades ?? 0, className: 'matched' },
+          { label: 'Missing', value: summary.missing_trades ?? 0, className: 'missing' },
+          { label: 'Extra', value: summary.extra_trades ?? 0, className: 'extra' },
+          { label: 'Match Rate', value: `${((summary.match_rate ?? 0) * 100).toFixed(0)}%`, className: 'rate' }
+        ];
+
+        summaryEl.innerHTML = cards.map(card => `
+          <div class="summary-box ${card.className}">
+            <span class="label">${card.label}</span>
+            <span class="value">${card.value}</span>
+          </div>
+        `).join('');
+      }
+
+      function renderTable(report) {
+        const matched = report.matched_trades || [];
+        const missing = report.missing_trades || [];
+        const extra = report.extra_trades || [];
+        const mismatches = report.price_mismatches || [];
+
+        currentRows = [
+          ...matched.map(item => ({
+            category: 'matched', label: 'MATCH', backtest: item.bt_trade, live: item.lt_trade,
+            time: item.bt_trade?.trade_time || item.lt_trade?.trade_time,
+          })),
+          ...mismatches.map(item => ({
+            category: 'mismatch', label: 'MISMATCH', backtest: item.bt_trade, live: item.lt_trade,
+            time: item.bt_trade?.trade_time || item.lt_trade?.trade_time,
+          })),
+          ...missing.map(item => ({
+            category: 'missing', label: 'MISSING', backtest: item.trade, live: null,
+            time: item.trade?.trade_time,
+          })),
+          ...extra.map(item => ({
+            category: 'extra', label: 'EXTRA', backtest: null, live: item.trade,
+            time: item.trade?.trade_time,
+          })),
+        ];
+        renderFilteredRows();
+      }
+
+      function normalizeReports(result) {
+        if (Array.isArray(result?.matched_trades)) return result;
+
+        const reports = Object.values(result || {}).filter(report => report && report.summary);
+        const merged = {
+          summary: {
+            total_backtest_trades: 0,
+            total_live_trades: 0,
+            matched_trades: 0,
+            missing_trades: 0,
+            extra_trades: 0,
+            price_mismatches: 0,
+          },
+          matched_trades: [],
+          missing_trades: [],
+          extra_trades: [],
+          price_mismatches: [],
+        };
+
+        reports.forEach(report => {
+          Object.keys(merged.summary).forEach(key => {
+            merged.summary[key] += report.summary[key] || 0;
+          });
+          ['matched_trades', 'missing_trades', 'extra_trades', 'price_mismatches'].forEach(key => {
+            merged[key].push(...(report[key] || []));
+          });
+        });
+        merged.summary.match_rate = Number((merged.summary.matched_trades / Math.max(1, merged.summary.total_backtest_trades)).toFixed(2));
+        return merged;
+      }
+
+      tableFilters.addEventListener('click', event => {
+        const button = event.target.closest('[data-filter]');
+        if (!button) return;
+        activeTradeFilter = button.dataset.filter;
+        renderFilteredRows();
+      });
+
+      document.querySelector('thead').addEventListener('click', event => {
+        const button = event.target.closest('[data-sort]');
+        if (!button) return;
+        const key = button.dataset.sort;
+        sortState = {
+          key,
+          direction: sortState.key === key && sortState.direction === 'asc' ? 'desc' : 'asc',
+        };
+        renderFilteredRows();
+      });
+
+      async function populateSelect(url, selectEl, defaultValue = null) {
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`Could not load ${url}`);
+          const data = await response.json();
+          const values = Array.isArray(data) ? data : [];
+          selectEl.replaceChildren(...values.map(value => new Option(value, value)));
+          if (values.includes(defaultValue)) selectEl.value = defaultValue;
+          else if (values.length) selectEl.value = values[0];
+          return values;
+        } catch (error) {
+          console.error('Failed to load options:', error);
+          return [];
+        }
+      }
+
+      async function loadOptions() {
+        const [liveAlgos, backtestAlgos] = await Promise.all([
+          populateSelect('/api/get_lt_algos', liveSelect, 'MA_CROSS'),
+          populateSelect('/api/get_bt_algos', backtestSelect, 'MA_CROSS'),
+        ]);
+        try {
+          const response = await fetch('/api/get_clients');
+          if (!response.ok) throw new Error('Could not load clients');
+          const clients = await response.json();
+          clientSelect.replaceChildren(new Option('All clients', ''), ...clients.map(client => new Option(client, client)));
+        } catch (error) {
+          console.error('Failed to load clients:', error);
+        }
+        if (liveAlgos.includes(backtestSelect.value)) liveSelect.value = backtestSelect.value;
+        else if (backtestAlgos.includes(liveSelect.value)) backtestSelect.value = liveSelect.value;
+        await loadTradeDates();
+      }
+
+      function setActiveDateField(field) {
+        activeDateField = field;
+        chooseStartButton.setAttribute('aria-pressed', String(field === 'start'));
+        chooseEndButton.setAttribute('aria-pressed', String(field === 'end'));
+      }
+
+      function renderCalendar() {
+        const [year, month] = calendarMonth.split('-').map(Number);
+        const startValue = startDateInput.value;
+        const endValue = endDateInput.value;
+        calendarMonthLabel.textContent = new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString([], {
+          month: 'long', year: 'numeric', timeZone: 'UTC'
+        });
+        const dates = [...tradeDates].sort();
+        if (!dates.length) {
+          tradeDayList.innerHTML = '<span class="no-trading-days">No trading days this month</span>';
+          return;
+        }
+
+        tradeDayList.innerHTML = dates.map(dateValue => {
+          const tradeDate = new Date(`${dateValue}T12:00:00Z`);
+          const classes = ['trade-day'];
+          if (dateValue === startValue || dateValue === endValue) classes.push('is-selected');
+          if (startValue && endValue && dateValue > startValue && dateValue < endValue) classes.push('in-range');
+          const dateLabel = tradeDate.toLocaleDateString([], { month: 'short', day: 'numeric', timeZone: 'UTC' });
+          const weekday = tradeDate.toLocaleDateString([], { weekday: 'short', timeZone: 'UTC' });
+          return `<button class="${classes.join(' ')}" type="button" data-date="${dateValue}" title="Trades on ${dateValue}"><span class="trade-day-label"><span class="trade-day-date">${dateLabel}</span><span class="trade-day-weekday">${weekday}</span></span></button>`;
+        }).join('');
+      }
+
+      async function loadTradeDates() {
+        if (!liveSelect.value || !backtestSelect.value || !calendarMonth) return;
+        const params = new URLSearchParams({
+          live_algo: liveSelect.value,
+          backtest_algo: backtestSelect.value,
+          month: calendarMonth,
+        });
+        if (clientSelect.value) params.set('client_id', clientSelect.value);
+        try {
+          const response = await fetch(`/api/trade_dates?${params}`);
+          if (!response.ok) throw new Error('Could not load trade dates');
+          const data = await response.json();
+          tradeDates = new Set(data.dates || []);
+        } catch (error) {
+          tradeDates = new Set();
+          console.error('Failed to load trade dates:', error);
+        }
+        renderCalendar();
+      }
+
+      function moveCalendarMonth(offset) {
+        const [year, month] = calendarMonth.split('-').map(Number);
+        const nextMonth = new Date(Date.UTC(year, month - 1 + offset, 1));
+        calendarMonth = `${nextMonth.getUTCFullYear()}-${String(nextMonth.getUTCMonth() + 1).padStart(2, '0')}`;
+        loadTradeDates();
+      }
+
+      liveSelect.addEventListener('change', () => {
+        if ([...backtestSelect.options].some(option => option.value === liveSelect.value)) {
+          backtestSelect.value = liveSelect.value;
+        }
+        loadTradeDates();
+      });
+
+      backtestSelect.addEventListener('change', () => {
+        if ([...liveSelect.options].some(option => option.value === backtestSelect.value)) {
+          liveSelect.value = backtestSelect.value;
+        }
+        loadTradeDates();
+      });
+
+      clientSelect.addEventListener('change', loadTradeDates);
+      chooseStartButton.addEventListener('click', () => setActiveDateField('start'));
+      chooseEndButton.addEventListener('click', () => setActiveDateField('end'));
+      document.getElementById('previousMonth').addEventListener('click', () => moveCalendarMonth(-1));
+      document.getElementById('nextMonth').addEventListener('click', () => moveCalendarMonth(1));
+      tradeDayList.addEventListener('click', event => {
+        const dayButton = event.target.closest('[data-date]');
+        if (!dayButton) return;
+        const chosenDate = dayButton.dataset.date;
+        if (activeDateField === 'start') {
+          startDateInput.value = chosenDate;
+          if (endDateInput.value && endDateInput.value < chosenDate) endDateInput.value = chosenDate;
+          setActiveDateField('end');
+        } else {
+          endDateInput.value = chosenDate;
+          if (startDateInput.value && startDateInput.value > chosenDate) startDateInput.value = chosenDate;
+          setActiveDateField('start');
+        }
+        renderCalendar();
+      });
+      startDateInput.addEventListener('change', () => {
+        calendarMonth = startDateInput.value.slice(0, 7) || calendarMonth;
+        loadTradeDates();
+      });
+      endDateInput.addEventListener('change', renderCalendar);
+
+      runButton.addEventListener('click', async () => {
+        statusEl.textContent = 'Running analysis...';
+
+        const payload = {
+          live_algo: liveSelect.value,
+          backtest_algo: backtestSelect.value,
+          start_date: document.getElementById('start_date').value,
+          end_date: document.getElementById('end_date').value,
+          price_tolerance: Number(document.getElementById('price_tolerance').value || 2.5),
+          clientId: document.getElementById('client').value || null,
+          check_qnt: false,
+          broker: null,
+        };
+
+        try {
+          const response = await fetch('/api/leak', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.detail || 'Request failed');
+          }
+
+          const result = normalizeReports(data.data || data);
+          renderSummary(result);
+          renderTable(result);
+          statusEl.textContent = 'Trade comparison loaded successfully.';
+        } catch (error) {
+          statusEl.textContent = `Error: ${error.message}`;
+          tableBody.innerHTML = `<tr><td colspan="10" class="empty">${escapeHtml(error.message)}</td></tr>`;
+        }
+      });
+
+      loadOptions();
+      const initialData = {
+        summary: { matched_trades: 0, missing_trades: 0, extra_trades: 0, match_rate: 0 },
+        matched_trades: [],
+        missing_trades: [],
+        extra_trades: [],
+        price_mismatches: []
+      };
+      renderSummary(initialData);
+      renderTable(initialData);
+    </script>
+  </body>
+</html>

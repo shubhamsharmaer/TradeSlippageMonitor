@@ -1,0 +1,122 @@
+[
+  {
+    "EntryTime": "2025-01-03T09:15:00+00:00",
+    "ExitTime": "2025-01-03T09:18:00+00:00",
+    "Symbol": "INFY",
+    "EntryPrice": 1512.5,
+    "ExitPrice": 1525.1,
+    "Quantity": 100,
+    "PositionStatus": 1,
+    "Pnl": 1260.0,
+    "ExitType": "CLOSE",
+    "strategy": "MA_CROSS"
+  },
+  {
+    "EntryTime": "2025-01-03T10:05:00+00:00",
+    "ExitTime": "2025-01-03T10:08:00+00:00",
+    "Symbol": "TCS",
+    "EntryPrice": 3428.4,
+    "ExitPrice": 3395.2,
+    "Quantity": 80,
+    "PositionStatus": -1,
+    "Pnl": -2660.0,
+    "ExitType": "CLOSE",
+    "strategy": "MA_CROSS"
+  },
+  {
+    "EntryTime": "2025-01-03T11:20:00+00:00",
+    "ExitTime": "2025-01-03T11:24:00+00:00",
+    "Symbol": "HDFCBANK",
+    "EntryPrice": 1718.2,
+    "ExitPrice": 1731.8,
+    "Quantity": 120,
+    "PositionStatus": 1,
+    "Pnl": 1640.0,
+    "ExitType": "CLOSE",
+    "strategy": "MA_CROSS"
+  },
+  {
+    "EntryTime": "2025-01-04T09:30:00+00:00",
+    "ExitTime": "2025-01-04T09:35:00+00:00",
+    "Symbol": "RELIANCE",
+    "EntryPrice": 2878.0,
+    "ExitPrice": 2905.6,
+    "Quantity": 60,
+    "PositionStatus": 1,
+    "Pnl": 1660.0,
+    "ExitType": "CLOSE",
+    "strategy": "BOLLINGER_STRATEGY"
+  },
+  {
+    "EntryTime": "2025-01-04T12:10:00+00:00",
+    "ExitTime": "2025-01-04T12:15:00+00:00",
+    "Symbol": "SBIN",
+    "EntryPrice": 840.3,
+    "ExitPrice": 848.7,
+    "Quantity": 150,
+    "PositionStatus": -1,
+    "Pnl": 1260.0,
+    "ExitType": "CLOSE",
+    "strategy": "MA_CROSS"
+  },
+  {
+    "EntryTime": "2025-01-04T15:05:00+00:00",
+    "ExitTime": "2025-01-04T15:12:00+00:00",
+    "Symbol": "ICICIBANK",
+    "EntryPrice": 1195.0,
+    "ExitPrice": 1188.7,
+    "Quantity": 90,
+    "PositionStatus": -1,
+    "Pnl": -560.0,
+    "ExitType": "CLOSE",
+    "strategy": "BOLLINGER_STRATEGY"
+  },
+  {
+    "EntryTime": "2025-01-05T09:00:00+00:00",
+    "ExitTime": "2025-01-05T09:05:00+00:00",
+    "Symbol": "AXISBANK",
+    "EntryPrice": 1048.4,
+    "ExitPrice": 1061.2,
+    "Quantity": 110,
+    "PositionStatus": 1,
+    "Pnl": 1390.0,
+    "ExitType": "CLOSE",
+    "strategy": "MA_CROSS"
+  },
+  {
+    "EntryTime": "2025-01-05T10:40:00+00:00",
+    "ExitTime": "2025-01-05T10:47:00+00:00",
+    "Symbol": "WIPRO",
+    "EntryPrice": 471.8,
+    "ExitPrice": 468.65,
+    "Quantity": 200,
+    "PositionStatus": -1,
+    "Pnl": -630.0,
+    "ExitType": "CLOSE",
+    "strategy": "MEAN_REVERSION"
+  },
+  {
+    "EntryTime": "2025-01-05T13:20:00+00:00",
+    "ExitTime": "2025-01-05T13:28:00+00:00",
+    "Symbol": "KOTAKBANK",
+    "EntryPrice": 1910.0,
+    "ExitPrice": 1938.0,
+    "Quantity": 75,
+    "PositionStatus": 1,
+    "Pnl": 2100.0,
+    "ExitType": "CLOSE",
+    "strategy": "MEAN_REVERSION"
+  },
+  {
+    "EntryTime": "2025-01-05T15:40:00+00:00",
+    "ExitTime": "2025-01-05T15:45:00+00:00",
+    "Symbol": "LT",
+    "EntryPrice": 2986.5,
+    "ExitPrice": 3012.2,
+    "Quantity": 45,
+    "PositionStatus": 1,
+    "Pnl": 1160.0,
+    "ExitType": "CLOSE",
+    "strategy": "MA_CROSS"
+  }
+]
